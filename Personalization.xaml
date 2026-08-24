@@ -15,7 +15,7 @@
             <StackPanel>
                 <TextBlock x:Name="label" HorizontalAlignment="Left" Margin="24,11,0,0" TextWrapping="Wrap" Text="Personalization" VerticalAlignment="Top" FontSize="32" FontFamily="Segoe UI Semibold"/>
 
-                <TextBlock x:Name="defaultnamelabel" HorizontalAlignment="Left" Margin="24,14,0,0" TextWrapping="Wrap" Text="Default Name for New Files and New Folders" VerticalAlignment="Top" FontSize="16"/>
+                <TextBlock x:Name="defaultnamelabel" HorizontalAlignment="Left" Margin="24,14,0,0" TextWrapping="Wrap" Text="Default Name for New Files and New Folders" VerticalAlignment="Top" FontSize="18"/>
 
                 <StackPanel Orientation="Horizontal" Margin="24,5,0,0">
                     <controls:TextBox x:Name="newname" Width="250" MaxLength="32" Watermark="New File" Height="34" VerticalAlignment="Center"/>
@@ -23,7 +23,7 @@
                     <controls:Button x:Name="stN" Margin="5,0,0,0" Content="Standard" Height="34" Padding="20,5" Click="stN_Click" />
                 </StackPanel>
 
-                <TextBlock x:Name="colorlabel" HorizontalAlignment="Left" Margin="24,12,0,0" TextWrapping="Wrap" Text="Change Selection Colors" VerticalAlignment="Top" FontSize="16"/>
+                <TextBlock x:Name="colorlabel" HorizontalAlignment="Left" Margin="24,12,0,0" TextWrapping="Wrap" Text="Change Selection Colors" VerticalAlignment="Top" FontSize="18"/>
 
                 <StackPanel Orientation="Horizontal" Margin="24,5,0,0">
                     <ComboBox x:Name="color" Padding="10,0,0,0" FontSize="14" Width="177" Height="30" VerticalAlignment="Center">
@@ -39,32 +39,32 @@
                     <controls:Button x:Name="apC" Margin="10,0,0,0" Content="Apply" Height="30" Padding="20,5" Click="apC_Click"/>
                 </StackPanel>
                 
-                <ui:ToggleSwitch x:Name="endtask" Header="Enable End Task in Taskbar" Margin="24,11,0,0" VerticalAlignment="Top" FontSize="16" Toggled="endtask_Toggled"/>
-                <ui:ToggleSwitch Header="Enable Old Context Menu" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16" x:Name="oldcont" Toggled="oldcont_Toggled"/>
-                <ui:ToggleSwitch Header="Remove Context Menu Delay" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16" x:Name="contdel" Toggled="contdel_Toggled"/>
-                <ui:ToggleSwitch x:Name="smallwindows" Header="Small Window Buttons" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16" Toggled="smallwindows_Toggled"/>
-                <ui:ToggleSwitch x:Name="blur" Header="Disable Blur on The Lock Screen" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16" Toggled="blur_Toggled"/>
-                <ui:ToggleSwitch x:Name="transparency"  Header="Disable Transparency" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16" Toggled="transparency_Toggled"/>
-                <ui:ToggleSwitch x:Name="darktheme" Header="Enable Dark theme" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16" Toggled="darktheme_Toggled"/>
+                <ui:ToggleSwitch x:Name="endtask" Header="Enable End Task in Taskbar" Margin="24,11,0,0" VerticalAlignment="Top" FontSize="18" Toggled="endtask_Toggled"/>
+                <ui:ToggleSwitch Header="Enable Old Context Menu" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18" x:Name="oldcont" Toggled="oldcont_Toggled"/>
+                <ui:ToggleSwitch Header="Remove Context Menu Delay" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18" x:Name="contdel" Toggled="contdel_Toggled"/>
+                <ui:ToggleSwitch x:Name="smallwindows" Header="Small Window Buttons" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18" Toggled="smallwindows_Toggled"/>
+                <ui:ToggleSwitch x:Name="blur" Header="Disable Blur on The Lock Screen" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18" Toggled="blur_Toggled"/>
+                <ui:ToggleSwitch x:Name="transparency"  Header="Disable Transparency" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18" Toggled="transparency_Toggled"/>
+                <ui:ToggleSwitch x:Name="darktheme" Header="Enable Dark theme" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18" Toggled="darktheme_Toggled"/>
 
                 <StackPanel Margin="24,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=verbose}" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Header, ElementName=verbose}" FontSize="18" VerticalAlignment="Center"/>
                         <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                             <controls:Button.ToolTip>
                                 <ToolTip MaxWidth="500" x:Name="sys_tooltip_verbose"/>
                             </controls:Button.ToolTip>
                         </controls:Button>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="verbose" FontSize="16" Header="Verbose" Toggled="verbose_Toggled">
+                    <ui:ToggleSwitch x:Name="verbose" FontSize="18" Header="Verbose" Toggled="verbose_Toggled">
                         <ui:ToggleSwitch.HeaderTemplate>
                             <DataTemplate />
                         </ui:ToggleSwitch.HeaderTemplate>
                     </ui:ToggleSwitch>
                 </StackPanel>
 
-                <ui:ToggleSwitch x:Name="disablelogo" Header="Disable Windows Logo in Bootloader" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16" Toggled="disablelogo_Toggled"/>
-                <ui:ToggleSwitch x:Name="disableanim" Header="Disable Animation in Bootloader" Margin="24,7,0,15" VerticalAlignment="Top" FontSize="16" Toggled="disableanim_Toggled"/>
+                <ui:ToggleSwitch x:Name="disablelogo" Header="Disable Windows Logo in Bootloader" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18" Toggled="disablelogo_Toggled"/>
+                <ui:ToggleSwitch x:Name="disableanim" Header="Disable Animation in Bootloader" Margin="24,7,0,15" VerticalAlignment="Top" FontSize="18" Toggled="disableanim_Toggled"/>
             </StackPanel>
 
         </ScrollViewer>

@@ -14,15 +14,20 @@
                 <TextBlock x:Name="lab" HorizontalAlignment="Left" Margin="24,11,0,7" TextWrapping="Wrap"
                    Text="Explorer and Desktop" VerticalAlignment="Top" FontSize="32" FontFamily="Segoe UI Semibold"/>
 
-                <ui:ToggleSwitch Toggled="nonremovable_Toggled" x:Name="nonremovable" Header="Hide Non-Removable Library Folders" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16"/>
-                <ui:ToggleSwitch Toggled="hidden_Toggled" x:Name="hidden" Header="Show Hidden Files and Folders" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16"/>
-                <ui:ToggleSwitch Toggled="ext_Toggled" x:Name="ext" Header="Show File Extensions" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16"/>
-                <ui:ToggleSwitch Toggled="pchome_Toggled" x:Name="pchome" Header="Open the This PC Page in Explorer instead of Home" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16"/>
-                <ui:ToggleSwitch Toggled="gallery_Toggled" x:Name="gallery" Header="Hide the Gallery Section" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16"/>
-                <ui:ToggleSwitch Toggled="showpc_Toggled" x:Name="showpc" Header="Show 'This PC' on the Desktop" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16"/>
-                <ui:ToggleSwitch Toggled="shortcut_Toggled" x:Name="shortcut" Header="Remove the '- Shortcut' Ending From New Shortcuts" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="16"/>
+                <ui:ToggleSwitch Toggled="nonremovable_Toggled" x:Name="nonremovable" Header="Hide Non-Removable Library Folders" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18"/>
+                <ui:ToggleSwitch Toggled="hidden_Toggled" x:Name="hidden" Header="Show Hidden Files and Folders" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18"/>
+                <ui:ToggleSwitch Toggled="ext_Toggled" x:Name="ext" Header="Show File Extensions" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18"/>
+                <ui:ToggleSwitch Toggled="pchome_Toggled" x:Name="pchome" Header="Open the This PC Page in Explorer instead of Home" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18"/>
+                <ui:ToggleSwitch Toggled="gallery_Toggled" x:Name="gallery" Header="Hide the Gallery Section" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18"/>
+                <ui:ToggleSwitch Toggled="showpc_Toggled" x:Name="showpc" Header="Show 'This PC' on the Desktop" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18"/>
+                <ui:ToggleSwitch Toggled="shortcut_Toggled" x:Name="shortcut" Header="Remove the '- Shortcut' Ending From New Shortcuts" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18"/>
+                <ui:ToggleSwitch Toggled="quickfreq_Toggled" x:Name="quickfreq" Header="Hide Frequently Used Folders in Quick Access" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18"/>
+                <ui:ToggleSwitch Toggled="recdocs_Toggled" x:Name="recdocs" Header="Disable Recent Documents History" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18"/>
+                <ui:ToggleSwitch Toggled="checkboxes_Toggled" x:Name="checkboxes" Header="Use Check Boxes to Select Items" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18"/>
+                <ui:ToggleSwitch Toggled="confirmdel_Toggled" x:Name="confirmdel" Header="Show a Confirmation Dialog When Deleting Files" Margin="24,7,0,0" VerticalAlignment="Top" FontSize="18"/>
 
-                <TextBlock x:Name="driveslabel" HorizontalAlignment="Left" Margin="24,7,0,0" TextWrapping="Wrap" Text="Hide Drives in This PC" VerticalAlignment="Top" FontSize="16"/>
+
+                <TextBlock x:Name="driveslabel" HorizontalAlignment="Left" Margin="24,7,0,0" TextWrapping="Wrap" Text="Hide Drives in This PC" VerticalAlignment="Top" FontSize="18"/>
 
                 <StackPanel Orientation="Horizontal" Margin="24,5,0,0">
                     <Grid>
@@ -40,7 +45,7 @@
                     </Grid>
                 </StackPanel>
 
-                <TextBlock x:Name="fixlabel" HorizontalAlignment="Left" Margin="24,7,0,0" TextWrapping="Wrap" Text="Fix Dublicate Drives in Explorer" VerticalAlignment="Top" FontSize="16"/>
+                <TextBlock x:Name="fixlabel" HorizontalAlignment="Left" Margin="24,7,0,0" TextWrapping="Wrap" Text="Fix Dublicate Drives in Explorer" VerticalAlignment="Top" FontSize="18"/>
 
                 <Grid HorizontalAlignment="Left" Margin="24,5,0,5">
                     <Grid.ColumnDefinitions>

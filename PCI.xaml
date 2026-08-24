@@ -10,15 +10,32 @@
       Title="PCI">
 
     <Grid Background="Transparent">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+        <ScrollViewer x:Name="MainScrollViewer" VerticalScrollBarVisibility="Auto" Opacity="0" d:Opacity="100">
+            <ScrollViewer.RenderTransform>
+                <TranslateTransform Y="0"/>
+            </ScrollViewer.RenderTransform>
             <StackPanel Margin="24,10,24,24">
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock x:Name="label" Text="PCI" FontSize="32" FontFamily="Segoe UI Semibold"/>
-                    <controls:Button x:Name="buttontooltip" Width="24" Height="24" Margin="10,5,0,0" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100" Content="?">
+                    <controls:Button x:Name="saveBtn" FocusVisualStyle="{x:Null}" Width="24" Height="24" Margin="10,5,0,0" VerticalAlignment="Center" Click="saveBtn_Click">
+                        <ui:SymbolIcon Symbol="Download" FontSize="12"/>
                         <controls:Button.ToolTip>
-                            <ToolTip MaxWidth="400" x:Name="pci_tooltip"/>
+                            <ToolTip MaxWidth="350" x:Name="save_tooltip"/>
                         </controls:Button.ToolTip>
+                    </controls:Button>
+                    <controls:Button x:Name="copyBtn" FocusVisualStyle="{x:Null}" Width="24" Height="24" Margin="6,5,0,0" VerticalAlignment="Center" Click="copyBtn_Click">
+                        <ui:SymbolIcon x:Name="copyIcon" Symbol="Copy" FontSize="12"/>
+                        <controls:Button.ToolTip>
+                            <ToolTip MaxWidth="400" x:Name="copy_tooltip"/>
+                        </controls:Button.ToolTip>
+                    </controls:Button>
+                    <controls:Button x:Name="rateBtn" FocusVisualStyle="{x:Null}" Height="24" Margin="6,5,0,0" Padding="8,0" VerticalAlignment="Center" Click="RateBtn_Click">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ui:SymbolIcon Symbol="SolidStar" FontSize="12" Margin="0,0,5,0"/>
+                            <TextBlock x:Name="ratetext" Text="ratetext" FontSize="13" Margin="0,0,2,0" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </controls:Button>
                 </StackPanel>
 
@@ -47,32 +64,36 @@
                         <TextBlock x:Name="summaryRamText" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Grid.Row="1" Grid.Column="0" x:Name="summaryGpuCard" Header="Видеокарта" Margin="0,4,4,4">
+                    <ui:SettingsCard Grid.Row="1" Grid.Column="0" x:Name="summaryGpuCard" Header="Видеокарта" Margin="0,5,4,4">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.TVMonitor}"/>
                         </ui:SettingsCard.HeaderIcon>
                         <TextBlock x:Name="summaryGpuText" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Grid.Row="1" Grid.Column="1" x:Name="summaryVramCard" Header="Видеопамять" Margin="4,4,0,4">
+                    <ui:SettingsCard Grid.Row="1" Grid.Column="1" x:Name="summaryVramCard" Header="Видеопамять" Margin="4,5,0,4">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.HardDrive}"/>
                         </ui:SettingsCard.HeaderIcon>
                         <TextBlock x:Name="summaryVramText" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                     </ui:SettingsCard>
 
-                    <ui:SettingsCard Grid.Row="2" Grid.Column="0" x:Name="bmanu" Header="Manufacturer" Margin="0,4,4,0">
-                        <ui:SettingsCard.HeaderIcon>
-                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Contact}"/>
-                        </ui:SettingsCard.HeaderIcon>
-                        <TextBlock x:Name="pcManufacturer" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
-                    </ui:SettingsCard>
-
-                    <ui:SettingsCard Grid.Row="2" Grid.Column="1" x:Name="bmodel" Header="Model" Margin="4,4,0,0">
+                    <ui:SettingsCard Grid.Row="2" Grid.Column="0" x:Name="bmodel" Header="Модель устройства" Margin="0,5,4,0">
                         <ui:SettingsCard.HeaderIcon>
                             <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Devices}"/>
                         </ui:SettingsCard.HeaderIcon>
                         <TextBlock x:Name="pcModel" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Grid.Row="2" Grid.Column="1" x:Name="summaryStorageCard" Header="Общий объем накопителей" Margin="4,5,0,0">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.HardDrive}"/>
+                        </ui:SettingsCard.HeaderIcon>
+
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock x:Name="summaryStorageText" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <ui:ProgressRing x:Name="summaryStorageProgress" IsActive="True" Width="16" Height="16" Visibility="Collapsed"/>
+                        </StackPanel>
                     </ui:SettingsCard>
                 </Grid>
 
@@ -112,7 +133,7 @@
                     </ui:SettingsExpander.Items>
                 </ui:SettingsExpander>
 
-                <ui:SettingsExpander Header="Adapter Details" IsExpanded="True" x:Name="gpuSectionEx" Margin="0,8,0,0">
+                <ui:SettingsExpander Header="Adapter Details" IsExpanded="True" x:Name="gpuSectionEx" Margin="0,9,0,0">
                     <ui:SettingsExpander.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.TVMonitor}" />
                     </ui:SettingsExpander.HeaderIcon>
@@ -131,15 +152,29 @@
                             <TextBlock x:Name="vram" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         </ui:SettingsCard>
 
+                        <ui:SettingsCard x:Name="gpudriverl" Header="Driver Version">
+                            <ui:SettingsCard.HeaderIcon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.CommandPrompt}" />
+                            </ui:SettingsCard.HeaderIcon>
+                            <TextBlock x:Name="gpudriver" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </ui:SettingsCard>
+
+                        <ui:SettingsCard x:Name="gpudriverdatel" Header="Driver Date">
+                            <ui:SettingsCard.HeaderIcon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.ScreenTime}" />
+                            </ui:SettingsCard.HeaderIcon>
+                            <TextBlock x:Name="gpudriverdate" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </ui:SettingsCard>
+
                         <ui:SettingsCard x:Name="videoComboBoxCard">
                             <ui:SettingsCard.Header>
-                                <ComboBox x:Name="videoComboBox" HorizontalAlignment="Stretch" SelectionChanged="VideoComboBox_SelectionChanged"/>
+                                <ComboBox x:Name="videoComboBox" HorizontalAlignment="Stretch" MinWidth="300" SelectionChanged="VideoComboBox_SelectionChanged"/>
                             </ui:SettingsCard.Header>
                         </ui:SettingsCard>
                     </ui:SettingsExpander.Items>
                 </ui:SettingsExpander>
 
-                <ui:SettingsExpander Header="Disk Drive Details" IsExpanded="True" x:Name="storageSection" Margin="0,8,0,0">
+                <ui:SettingsExpander Header="Disk Drive Details" IsExpanded="True" x:Name="storageSection" Margin="0,9,0,0">
                     <ui:SettingsExpander.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.HardDrive}"/>
                     </ui:SettingsExpander.HeaderIcon>
@@ -157,15 +192,33 @@
                             <TextBlock x:Name="ssdcValue" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         </ui:SettingsCard>
 
+                        <ui:SettingsCard x:Name="ssdfreel" Header="Free Space">
+                            <ui:SettingsCard.HeaderIcon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.PieSingle}" />
+                            </ui:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <ui:ProgressRing x:Name="ssdFreeProgress" IsActive="True" Width="16" Height="16" Margin="0,0,8,0" Visibility="Collapsed"/>
+                                <TextBlock x:Name="ssdfreeValue" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ui:SettingsCard>
+
+                        <ui:SettingsCard x:Name="ssdtypel" Header="Disk Type">
+                            <ui:SettingsCard.HeaderIcon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.HardDrive}" />
+                            </ui:SettingsCard.HeaderIcon>
+                            <TextBlock x:Name="ssdtypeValue" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </ui:SettingsCard>
+
                         <ui:SettingsCard x:Name="ssdComboBoxCard">
                             <ui:SettingsCard.Header>
-                                <ComboBox x:Name="ssdComboBox" HorizontalAlignment="Stretch" SelectionChanged="SSDComboBox_SelectionChanged"/>
+                                <ComboBox x:Name="ssdComboBox" HorizontalAlignment="Stretch" MinWidth="300" SelectionChanged="SSDComboBox_SelectionChanged"/>
                             </ui:SettingsCard.Header>
+                            <Button x:Name="testDiskBtn" Click="TestDiskBtn_Click" Height="34" MinWidth="120" />
                         </ui:SettingsCard>
                     </ui:SettingsExpander.Items>
                 </ui:SettingsExpander>
 
-                <ui:SettingsExpander Header="RAM Stick Details" IsExpanded="False" x:Name="ramStickSection" Margin="0,8,0,0">
+                <ui:SettingsExpander Header="RAM Stick Details" IsExpanded="True" x:Name="ramStickSection" Margin="0,9,0,0">
                     <ui:SettingsExpander.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Tag}" />
                     </ui:SettingsExpander.HeaderIcon>
@@ -189,15 +242,22 @@
                             <TextBlock x:Name="ramStickCapacity" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
                         </ui:SettingsCard>
 
+                        <ui:SettingsCard x:Name="ramstickspeedl" Header="Speed">
+                            <ui:SettingsCard.HeaderIcon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.SpeedHigh}" />
+                            </ui:SettingsCard.HeaderIcon>
+                            <TextBlock x:Name="ramStickSpeed" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </ui:SettingsCard>
+
                         <ui:SettingsCard x:Name="ramStickComboBoxCard">
                             <ui:SettingsCard.Header>
-                                <ComboBox x:Name="ramStickComboBox" HorizontalAlignment="Stretch" SelectionChanged="ramStickComboBox_SelectionChanged"/>
+                                <ComboBox x:Name="ramStickComboBox" HorizontalAlignment="Stretch" MinWidth="200" SelectionChanged="ramStickComboBox_SelectionChanged"/>
                             </ui:SettingsCard.Header>
                         </ui:SettingsCard>
                     </ui:SettingsExpander.Items>
                 </ui:SettingsExpander>
 
-                <ui:SettingsExpander Header="Motherboard Details" IsExpanded="False" x:Name="motherboardSectionEx" Margin="0,8,0,0">
+                <ui:SettingsExpander Header="Motherboard Details" IsExpanded="True" x:Name="motherboardSectionEx" Margin="0,9,0,0">
                     <ui:SettingsExpander.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.DeveloperTools}"/>
                     </ui:SettingsExpander.HeaderIcon>
@@ -229,14 +289,142 @@
                     </ui:SettingsExpander.Items>
                 </ui:SettingsExpander>
 
-                <TextBlock x:Name="benchmarkLabel" Text="BENCHMARK" Margin="2,24,0,4" FontSize="22" FontWeight="SemiBold"/>
+                <ui:SettingsExpander Header="Display" IsExpanded="True" x:Name="displaySection" Margin="0,9,0,0">
+                    <ui:SettingsExpander.HeaderIcon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.TVMonitor}"/>
+                    </ui:SettingsExpander.HeaderIcon>
+                    <ui:SettingsExpander.Items>
+                        <ui:SettingsCard x:Name="resolutionl" Header="Resolution">
+                            <ui:SettingsCard.HeaderIcon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.TVMonitor}"/>
+                            </ui:SettingsCard.HeaderIcon>
+                            <TextBlock x:Name="resolution" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </ui:SettingsCard>
+                        <ui:SettingsCard x:Name="refreshratel" Header="Refresh Rate">
+                            <ui:SettingsCard.HeaderIcon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.SpeedHigh}"/>
+                            </ui:SettingsCard.HeaderIcon>
+                            <TextBlock x:Name="refreshrate" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </ui:SettingsCard>
+                        <ui:SettingsCard x:Name="monitormodell" Header="Monitor Model">
+                            <ui:SettingsCard.HeaderIcon>
+                                <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Devices}"/>
+                            </ui:SettingsCard.HeaderIcon>
+                            <TextBlock x:Name="monitormodel" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        </ui:SettingsCard>
+                        <ui:SettingsCard x:Name="monitorComboBoxCard">
+                            <ui:SettingsCard.Header>
+                                <ComboBox x:Name="monitorComboBox" HorizontalAlignment="Stretch" MinWidth="300" SelectionChanged="monitorComboBox_SelectionChanged"/>
+                            </ui:SettingsCard.Header>
+                        </ui:SettingsCard>
+                    </ui:SettingsExpander.Items>
+                </ui:SettingsExpander>
 
+                <TextBlock x:Name="benchmarkLabel" Text="BENCHMARK" Margin="2,24,0,4" FontSize="22" FontWeight="SemiBold"/>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                     <Button x:Name="singleBench" Content="Single" FontSize="18" Margin="0,0,8,0" Click="singleBench_Click"/>
                     <Button x:Name="multiBench" Content="Multi" FontSize="18" Margin="0,0,8,0" Click="multiBench_Click"/>
                     <Button x:Name="lookresults" Content="Results" FontSize="18" Click="LookResults_Click"/>
                 </StackPanel>
                 <TextBlock x:Name="benchmarkResultText" Margin="4,6,0,0" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Left"/>
+
+            </StackPanel>
+        </ScrollViewer>
+        <StackPanel x:Name="loadingPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible" d:Visibility="Collapsed">
+            <ui:ProgressRing x:Name="ring" IsActive="True" Width="60" Height="60" HorizontalAlignment="Center"/>
+            <TextBlock x:Name="loadingText" HorizontalAlignment="Center" Margin="0,12,0,0" FontSize="14" Opacity="1"/>
+            <Button x:Name="stopTestBtn" Margin="0,16,0,0" HorizontalAlignment="Center" Visibility="Collapsed" Click="StopTestBtn_Click" MinWidth="120"/>
+        </StackPanel>
+
+
+        <ScrollViewer x:Name="RatingScrollViewer" VerticalScrollBarVisibility="Auto" Visibility="Collapsed" Opacity="0">
+            <ScrollViewer.RenderTransform>
+                <TranslateTransform Y="-100"/>
+            </ScrollViewer.RenderTransform>
+            <StackPanel Margin="24,10,24,24">
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                    <controls:Button FocusVisualStyle="{x:Null}" Width="32" Height="32" Margin="0,5,10,0" VerticalAlignment="Center" Click="BackToMain_Click">
+                        <ui:SymbolIcon Symbol="Back" FontSize="14"/>
+                    </controls:Button>
+                    <TextBlock x:Name="ratinglabel" Text="Оценка характеристик" FontSize="32" FontFamily="Segoe UI Semibold"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,8">
+
+                    <ui:SettingsCard Margin="0,3,0,4">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Component}"/>
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:SettingsCard.Header>
+                            <StackPanel Margin="0,3,0,3">
+                                <TextBlock x:Name="rateCpuLabel" Text="Процессор" FontSize="16"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <TextBlock x:Name="rateCpuScore" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <ui:ProgressRing x:Name="rateCpuRing" IsActive="True" Width="20" Height="20" Margin="0,8,0,0" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </ui:SettingsCard.Header>
+                        <TextBlock x:Name="rateCpuDetails" FontSize="20" FontWeight="SemiBold" TextAlignment="Right" TextWrapping="Wrap" MaxWidth="450" VerticalAlignment="Center" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Margin="0,3,0,4">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.TVMonitor}"/>
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:SettingsCard.Header>
+                            <StackPanel Margin="0,3,0,3">
+                                <TextBlock x:Name="rateGpuLabel" Text="Видеокарта" FontSize="16"/>
+                                <TextBlock x:Name="rateGpuScore" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </ui:SettingsCard.Header>
+                        <TextBlock x:Name="rateGpuDetails" FontSize="20" FontWeight="SemiBold" TextAlignment="Right" TextWrapping="Wrap" VerticalAlignment="Center" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Margin="0,3,0,4">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Tag}"/>
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:SettingsCard.Header>
+                            <StackPanel Margin="0,3,0,3">
+                                <TextBlock x:Name="rateRamLabel" Text="Оперативная память" FontSize="16"/>
+                                <TextBlock x:Name="rateRamScore" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </ui:SettingsCard.Header>
+                        <TextBlock x:Name="rateRamDetails" FontSize="20" FontWeight="SemiBold" TextAlignment="Right" TextWrapping="Wrap" VerticalAlignment="Center" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    </ui:SettingsCard>
+
+                    <ui:SettingsCard Margin="0,3,0,0">
+                        <ui:SettingsCard.HeaderIcon>
+                            <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.HardDrive}"/>
+                        </ui:SettingsCard.HeaderIcon>
+                        <ui:SettingsCard.Header>
+                            <StackPanel Margin="0,3,0,3">
+                                <TextBlock x:Name="rateStorageLabel" Text="Объем накопителей" FontSize="16"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                    <TextBlock x:Name="rateStorageScore" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                    <ui:ProgressRing x:Name="rateStorageRing" IsActive="True" Width="20" Height="20" Margin="0,8,0,0" Visibility="Collapsed"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </ui:SettingsCard.Header>
+                        <TextBlock x:Name="rateStorageDetails" FontSize="20" FontWeight="SemiBold" TextAlignment="Right" TextWrapping="Wrap" VerticalAlignment="Center" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                    </ui:SettingsCard>
+                </StackPanel>
+
+                <ui:SettingsCard Margin="0,0,0,0">
+                    <ui:SettingsCard.HeaderIcon>
+                        <ui:SymbolIcon Symbol="SolidStar" FontSize="12"/>
+                    </ui:SettingsCard.HeaderIcon>
+                    <ui:SettingsCard.Header>
+                        <StackPanel Margin="0,8,0,0">
+                            <TextBlock x:Name="rateTotalLabel" Text="Итоговый балл" FontSize="18" FontWeight="Medium"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="rateTotalText" FontSize="48" FontWeight="Bold" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                                <ui:ProgressRing x:Name="rateTotalRing" IsActive="True" Width="32" Height="32" Margin="0,0,0,0" Visibility="Collapsed" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ui:SettingsCard.Header>
+                </ui:SettingsCard>
             </StackPanel>
         </ScrollViewer>
     </Grid>

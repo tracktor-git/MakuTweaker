@@ -25,11 +25,19 @@
                     <Style TargetType="ui:SettingsCard">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                     </Style>
+
+                    <Style TargetType="Image">
+                        <Setter Property="RenderTransform">
+                            <Setter.Value>
+                                <ScaleTransform ScaleX="1.4" ScaleY="1.4" CenterX="12" CenterY="12" />
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
                 </StackPanel.Resources>
 
                 <TextBlock x:Name="label" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Remove UWP Apps" VerticalAlignment="Top" FontSize="32" FontFamily="Segoe UI Semibold"/>
                 <ui:InfoBar x:Name="info2" IsOpen="True" FontSize="18" FontFamily="Segoe UI" Margin="0,5,0,5" IsClosable="False"/>
-                
+
                 <ui:SettingsExpander x:Name="e1" Header="Bloatware" Visibility="Collapsed" VerticalAlignment="Top" HorizontalAlignment="Stretch" IsExpanded="True" IsTabStop="False" >
                     <ui:SettingsExpander.HeaderIcon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Delete}" />
@@ -37,78 +45,159 @@
                     <CheckBox x:Name="selectAllE1" Content="Select All" IsThreeState="True" PreviewMouseLeftButtonDown="SelectAll_PreviewMouseLeftButtonDown" />
                     <ui:SettingsExpander.Items>
                         <ui:SettingsCard x:Name="u31" Header="Microsoft 365 Copilot" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u31Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u31t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u29" Header="Microsoft Teams" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u29Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u29t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u30" Header="Microsoft To Do" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u30Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u30t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u28" Header="Microsoft Outlook" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u28Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u28t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u1" Header="Windows Mixed Reality" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u1Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u1t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u2" Header="Solitaire Collection" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u2Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u2t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u4" Header="Cortana" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u4Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u4t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u5" Header="Technical Support" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u5Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u5t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u6" Header="Feedback Hub" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u6Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u6t" IsTabStop="False"/>
                         </ui:SettingsCard>
+                        <ui:SettingsCard x:Name="u33" Header="Quick Assist" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u33Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
+                            <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u33t" IsTabStop="False"/>
+                        </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u7" Header="Dev Home" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u7Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u7t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u8" Header="3D Builder, Paint 3D" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u8Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u8t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u10" Header="Maps" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u10Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u10t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u11" Header="Power Automate" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u11Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u11t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u12" Header="Clipchamp" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u12Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u12t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u13" Header="People, Mail, Calendar" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u13Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u13t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u14" Header="OneNote" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u14Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u14t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u18" Header="News" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u18Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u18t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u19" Header="Weather" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u19Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u19t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u20" Header="Sticky Notes" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u20Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u20t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u21" Header="Get Started / Tips" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u21Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u21t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u22" Header="Sound Recorder" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u22Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u22t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u25" Header="People" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u25Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u25t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u26" Header="Skype" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u26Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u26t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u27" Header="Alarms &amp; Clock" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u27Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u27t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u3" Header="Messaging" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u3Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u3t" IsTabStop="False"/>
                         </ui:SettingsCard>
                     </ui:SettingsExpander.Items>
@@ -120,16 +209,34 @@
                     </ui:SettingsExpander.HeaderIcon>
                     <CheckBox x:Name="selectAllE2" Content="Select All" IsThreeState="True" PreviewMouseLeftButtonDown="SelectAll_PreviewMouseLeftButtonDown" />
                     <ui:SettingsExpander.Items>
+                        <ui:SettingsCard x:Name="u37" Header="Paint" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u37Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
+                            <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u37t" IsTabStop="False"/>
+                        </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u9" Header="Your Phone" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u9Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u9t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u15" Header="Media Player" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u15Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u15t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u16" Header="Movies and TV" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u16Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u16t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u17" Header="Camera" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u17Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u17t" IsTabStop="False"/>
                         </ui:SettingsCard>
                     </ui:SettingsExpander.Items>
@@ -141,10 +248,34 @@
                     </ui:SettingsExpander.HeaderIcon>
                     <ui:SettingsExpander.Items>
                         <ui:SettingsCard x:Name="u23" Header="Microsoft Store" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u23Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u23t" IsTabStop="False"/>
                         </ui:SettingsCard>
                         <ui:SettingsCard x:Name="u24" Header="Xbox" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u24Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
                             <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u24t" IsTabStop="False"/>
+                        </ui:SettingsCard>
+                        <ui:SettingsCard x:Name="u32" Header="OneDrive" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u32Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
+                            <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u32t" IsTabStop="False"/>
+                        </ui:SettingsCard>
+                        <ui:SettingsCard x:Name="u38" Header="Notepad" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u38Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
+                            <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u38t" IsTabStop="False"/>
+                        </ui:SettingsCard>
+                        <ui:SettingsCard x:Name="u39" Header="Calculator" IsEnabled="False">
+                            <ui:SettingsCard.HeaderIcon>
+                                <Image x:Name="u39Img" Width="24" Height="24" />
+                            </ui:SettingsCard.HeaderIcon>
+                            <ui:ToggleSwitch IsEnabled="False" Toggled="AppToggle_Toggled" x:Name="u39t" IsTabStop="False"/>
                         </ui:SettingsCard>
                     </ui:SettingsExpander.Items>
                 </ui:SettingsExpander>

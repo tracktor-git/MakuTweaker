@@ -60,7 +60,7 @@ namespace MakuTweakerNew
 
             Exception logException = ex.InnerException ?? ex;
 
-            string errorDetails = $"MakuTweaker 5.7.0 Crash [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]\n{errorType}\n\n" +
+            string errorDetails = $"MakuTweaker 5.8.5 Crash [{DateTime.Now:yyyy-MM-dd HH:mm:ss}]\n{errorType}\n\n" +
                                   GetExceptionDetails(logException);
 
             try
@@ -68,7 +68,7 @@ namespace MakuTweakerNew
                 Directory.CreateDirectory(logFolder);
                 string logFilePath = Path.Combine(logFolder, $"makutw-crash_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt");
 
-                string chatMessage = "If MakuTweaker crashed through no fault of your own, please report this crash in the GitHub Repository:\nhttps://github.com/MarkAdderly/MakuTweaker\n"+
+                string chatMessage = "If MakuTweaker crashed through no fault of your own, please report this crash in the GitHub Repository:\nhttps://github.com/MarkAdderly/MakuTweaker\n\n" +
                                      "Если MakuTweaker крашнулся не по вашей вине, то, пожалуйста, сообщите об этом на GitHub репозитории:\nhttps://github.com/MarkAdderly/MakuTweaker";
 
                 errorDetails += "\n\n" + chatMessage;
@@ -88,7 +88,55 @@ namespace MakuTweakerNew
 
         private string GetExceptionDetails(Exception ex)
         {
-            return $"[Message]\n{ex.Message}\n\n" +
+            string className = "Unknown Class / Page";
+            string methodName = "Unknown Function";
+            string lineNum = "ReleaveVerNoNumber";
+
+            try
+            {
+                var stackTrace = new System.Diagnostics.StackTrace(ex, true);
+                System.Diagnostics.StackFrame targetFrame = null;
+                for (int i = 0; i < stackTrace.FrameCount; i++)
+                {
+                    var frame = stackTrace.GetFrame(i);
+                    var method = frame?.GetMethod();
+                    if (method != null && method.DeclaringType != null)
+                    {
+                        if (method.DeclaringType.FullName.StartsWith("MakuTweakerNew"))
+                        {
+                            targetFrame = frame;
+                            break;
+                        }
+                    }
+                }
+
+                if (targetFrame == null && stackTrace.FrameCount > 0)
+                {
+                    targetFrame = stackTrace.GetFrame(0);
+                }
+
+                if (targetFrame != null)
+                {
+                    var method = targetFrame.GetMethod();
+                    if (method != null)
+                    {
+                        methodName = method.Name;
+                        className = method.DeclaringType?.FullName ?? method.DeclaringType?.Name ?? "Unknown Class";
+                    }
+
+                    int fileLineNumber = targetFrame.GetFileLineNumber();
+                    if (fileLineNumber > 0)
+                    {
+                        lineNum = fileLineNumber.ToString();
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            return $"[Crash Origin]\nPage/Class: {className}\nFunction: {methodName}\nLine: {lineNum}\n\n" +
+                   $"[Message]\n{ex.Message}\n\n" +
                    $"[StackTrace]\n{ex.StackTrace}\n\n" +
                    $"[TargetSite]\n{ex.TargetSite}\n\n" +
                    $"[Data]\n{(ex.Data.Count > 0 ? string.Join(", ", ex.Data.Keys) : "No Data")}\n\n";

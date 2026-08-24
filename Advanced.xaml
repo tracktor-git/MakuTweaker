@@ -15,10 +15,25 @@
                 <TextBlock x:Name="label" HorizontalAlignment="Left" Margin="24,11,0,0" TextWrapping="Wrap" Text="Advanced Settings" VerticalAlignment="Top" FontSize="32" FontFamily="Segoe UI Semibold"/>
 
                 <StackPanel Orientation="Horizontal" Margin="24,10,0,0">
-                    <TextBlock x:Name="edgelabel" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Uninstall Microsoft Edge" VerticalAlignment="Top" FontSize="16"/>
+                    <TextBlock x:Name="edgelabel" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Uninstall Microsoft Edge" VerticalAlignment="Top" FontSize="18"/>
                     <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                         <controls:Button.ToolTip>
                             <ToolTip MaxWidth="500" x:Name="edge_tooltip"/>
+                        </controls:Button.ToolTip>
+                    </controls:Button>
+                </StackPanel>
+                <Grid HorizontalAlignment="Left" Margin="24,5,0,0" VerticalAlignment="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="SysRecButtons"/>
+                    </Grid.ColumnDefinitions>
+                    <controls:Button x:Name="edgeBtn" Padding="20,5" Content="Uninstall" Height="28" Click="edgeBtn_Click"/>
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" Margin="24,10,0,0">
+                    <TextBlock x:Name="sitebanlabel" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Блокировка определённых сайтов и доменов" VerticalAlignment="Top" FontSize="18"/>
+                    <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
+                        <controls:Button.ToolTip>
+                            <ToolTip MaxWidth="500" x:Name="siteban_tooltip"/>
                         </controls:Button.ToolTip>
                     </controls:Button>
                 </StackPanel>
@@ -27,51 +42,19 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" SharedSizeGroup="SysRecButtons"/>
                     </Grid.ColumnDefinitions>
-                    <controls:Button x:Name="edgeBtn" Padding="20,5" Content="Uninstall" Height="28" Click="edgeBtn_Click"/>
+                    <controls:Button x:Name="siteBan" Padding="20,5" Content="Open" Height="28" Click="siteBan_Click"/>
                 </Grid>
 
                 <StackPanel Margin="24,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=oldbootloader}" FontSize="16" VerticalAlignment="Center"/>
-                        <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
-                            <controls:Button.ToolTip>
-                                <ToolTip MaxWidth="500" x:Name="sys_tooltip_oldbootloader"/>
-                            </controls:Button.ToolTip>
-                        </controls:Button>
-                    </StackPanel>
-                    <ui:ToggleSwitch x:Name="oldbootloader" FontSize="16" Header="Enable Old OS Bootloader" Toggled="oldbootloader_Toggled">
-                        <ui:ToggleSwitch.HeaderTemplate>
-                            <DataTemplate />
-                        </ui:ToggleSwitch.HeaderTemplate>
-                    </ui:ToggleSwitch>
-                </StackPanel>
-
-                <StackPanel Margin="24,10,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=advancedboot}" FontSize="16" VerticalAlignment="Center"/>
-                        <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
-                            <controls:Button.ToolTip>
-                                <ToolTip MaxWidth="500" x:Name="sys_tooltip_advancedboot"/>
-                            </controls:Button.ToolTip>
-                        </controls:Button>
-                    </StackPanel>
-                    <ui:ToggleSwitch x:Name="advancedboot" FontSize="16" Header="Additional Options on Each Boot" Toggled="advancedboot_Toggled">
-                        <ui:ToggleSwitch.HeaderTemplate>
-                            <DataTemplate />
-                        </ui:ToggleSwitch.HeaderTemplate>
-                    </ui:ToggleSwitch>
-                </StackPanel>
-
-                <StackPanel Margin="24,10,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=disindex}" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Header, ElementName=disindex}" FontSize="18" VerticalAlignment="Center"/>
                         <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                             <controls:Button.ToolTip>
                                 <ToolTip MaxWidth="500" x:Name="index_tooltip"/>
                             </controls:Button.ToolTip>
                         </controls:Button>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="disindex" FontSize="16" Header="Disable Indexing" Toggled="disindex_Toggled">
+                    <ui:ToggleSwitch x:Name="disindex" FontSize="18" Header="Disable Indexing" Toggled="disindex_Toggled">
                         <ui:ToggleSwitch.HeaderTemplate>
                             <DataTemplate />
                         </ui:ToggleSwitch.HeaderTemplate>
@@ -80,55 +63,85 @@
 
                 <StackPanel Margin="24,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=swap}" FontSize="16" VerticalAlignment="Center"/>
-                        <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
-                            <controls:Button.ToolTip>
-                                <ToolTip MaxWidth="500" x:Name="sys_tooltip_swap"/>
-                            </controls:Button.ToolTip>
-                        </controls:Button>
-                    </StackPanel>
-                    <ui:ToggleSwitch x:Name="swap" FontSize="16" Header="Disable Swap File" Toggled="swap_Toggled">
-                        <ui:ToggleSwitch.HeaderTemplate>
-                            <DataTemplate />
-                        </ui:ToggleSwitch.HeaderTemplate>
-                    </ui:ToggleSwitch>
-                </StackPanel>
-
-                <StackPanel Margin="24,10,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=ttl}" FontSize="16" VerticalAlignment="Center"/>
-                        <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
-                            <controls:Button.ToolTip>
-                                <ToolTip MaxWidth="500" x:Name="sys_tooltip_ttl"/>
-                            </controls:Button.ToolTip>
-                        </controls:Button>
-                    </StackPanel>
-                    <ui:ToggleSwitch x:Name="ttl" FontSize="16" Header="TTL65" Toggled="ttl_Toggled">
-                        <ui:ToggleSwitch.HeaderTemplate>
-                            <DataTemplate />
-                        </ui:ToggleSwitch.HeaderTemplate>
-                    </ui:ToggleSwitch>
-                </StackPanel>
-
-                <StackPanel Margin="24,10,0,0">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=vbs}" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Header, ElementName=vbs}" FontSize="18" VerticalAlignment="Center"/>
                         <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                             <controls:Button.ToolTip>
                                 <ToolTip MaxWidth="500" x:Name="sys_tooltip_vbs"/>
                             </controls:Button.ToolTip>
                         </controls:Button>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="vbs" FontSize="16" Header="Disable Virtualization-based Security" Toggled="vbs_Toggled">
+                    <ui:ToggleSwitch x:Name="vbs" FontSize="18" Header="Disable Virtualization-based Security" Toggled="vbs_Toggled">
                         <ui:ToggleSwitch.HeaderTemplate>
                             <DataTemplate />
                         </ui:ToggleSwitch.HeaderTemplate>
                     </ui:ToggleSwitch>
                 </StackPanel>
 
+                <StackPanel Margin="24,10,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Header, ElementName=oldbootloader}" FontSize="18" VerticalAlignment="Center"/>
+                        <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
+                            <controls:Button.ToolTip>
+                                <ToolTip MaxWidth="500" x:Name="sys_tooltip_oldbootloader"/>
+                            </controls:Button.ToolTip>
+                        </controls:Button>
+                    </StackPanel>
+                    <ui:ToggleSwitch x:Name="oldbootloader" FontSize="18" Header="Enable Old OS Bootloader" Toggled="oldbootloader_Toggled">
+                        <ui:ToggleSwitch.HeaderTemplate>
+                            <DataTemplate />
+                        </ui:ToggleSwitch.HeaderTemplate>
+                    </ui:ToggleSwitch>
+                </StackPanel>
+
+                <StackPanel Margin="24,10,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Header, ElementName=ttl}" FontSize="18" VerticalAlignment="Center"/>
+                        <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
+                            <controls:Button.ToolTip>
+                                <ToolTip MaxWidth="500" x:Name="sys_tooltip_ttl"/>
+                            </controls:Button.ToolTip>
+                        </controls:Button>
+                    </StackPanel>
+                    <ui:ToggleSwitch x:Name="ttl" FontSize="18" Header="TTL65" Toggled="ttl_Toggled">
+                        <ui:ToggleSwitch.HeaderTemplate>
+                            <DataTemplate />
+                        </ui:ToggleSwitch.HeaderTemplate>
+                    </ui:ToggleSwitch>
+                </StackPanel>
+
+                <StackPanel Margin="24,10,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Header, ElementName=advancedboot}" FontSize="18" VerticalAlignment="Center"/>
+                        <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
+                            <controls:Button.ToolTip>
+                                <ToolTip MaxWidth="500" x:Name="sys_tooltip_advancedboot"/>
+                            </controls:Button.ToolTip>
+                        </controls:Button>
+                    </StackPanel>
+                    <ui:ToggleSwitch x:Name="advancedboot" FontSize="18" Header="Additional Options on Each Boot" Toggled="advancedboot_Toggled">
+                        <ui:ToggleSwitch.HeaderTemplate>
+                            <DataTemplate />
+                        </ui:ToggleSwitch.HeaderTemplate>
+                    </ui:ToggleSwitch>
+                </StackPanel>
+                
+                <StackPanel Margin="24,10,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Header, ElementName=swap}" FontSize="18" VerticalAlignment="Center"/>
+                        <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
+                            <controls:Button.ToolTip>
+                                <ToolTip MaxWidth="500" x:Name="sys_tooltip_swap"/>
+                            </controls:Button.ToolTip>
+                        </controls:Button>
+                    </StackPanel>
+                    <ui:ToggleSwitch x:Name="swap" FontSize="18" Header="Disable Swap File" Toggled="swap_Toggled">
+                        <ui:ToggleSwitch.HeaderTemplate>
+                            <DataTemplate />
+                        </ui:ToggleSwitch.HeaderTemplate>
+                    </ui:ToggleSwitch>
+                </StackPanel>
 
                 <Rectangle HorizontalAlignment="Left" Height="17" Margin="3,0,0,0" VerticalAlignment="Top" Width="67"/>
-
             </StackPanel>
         </ScrollViewer>
     </Grid>

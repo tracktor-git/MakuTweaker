@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Net.Mail;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -28,8 +29,20 @@ namespace MakuTweakerNew
 {
     public partial class SysAndRec : Page
     {
+        [Flags]
+        public enum RecycleFlags : uint
+        {
+            SHERB_NOCONFIRMATION = 0x00000001,
+            SHERB_NOPROGRESSUI = 0x00000002,
+            SHERB_NOSOUND = 0x00000004
+        }
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+        private static extern uint SHEmptyRecycleBin(IntPtr hWnd, string pszRootPath, RecycleFlags dwFlags);
+
         bool isLoaded = false;
         MainWindow mw = (MainWindow)System.Windows.Application.Current.MainWindow;
+
         public SysAndRec()
         {
             InitializeComponent();
@@ -42,6 +55,111 @@ namespace MakuTweakerNew
                 batterylabel.Visibility = Visibility.Collapsed;
                 report.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private async void UpdateTempSizeLabel()
+        {
+            tempSizeText.Visibility = Visibility.Collapsed;
+            tempSizeRing.Visibility = Visibility.Visible;
+            tempSizeRing.IsActive = true;
+
+            long sizeBytes = await Task.Run(() =>
+            {
+                string dir1 = Path.GetTempPath();
+                string dir2 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp");
+                return GetDirectorySize(dir1) + GetDirectorySize(dir2);
+            });
+
+            if (sizeBytes < 104857600)
+            {
+                tempFullPanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                string size = GetFormattedSize(sizeBytes);
+                tempSizeText.Text = $" ({size})";
+                tempSizeRing.IsActive = false;
+                tempSizeRing.Visibility = Visibility.Collapsed;
+                tempSizeText.Visibility = Visibility.Visible;
+            }
+        }
+
+        private async void UpdatePipSizeLabel()
+        {
+            pipFullPanel.Visibility = Visibility.Visible;
+            pipSizeText.Visibility = Visibility.Collapsed;
+            pipSizeRing.Visibility = Visibility.Visible;
+            pipSizeRing.IsActive = true;
+
+            long sizeBytes = await Task.Run(() =>
+            {
+                string pipDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "pip");
+                return GetDirectorySize(pipDir);
+            });
+
+            if (sizeBytes < 104857600)
+            {
+                pipFullPanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                string size = GetFormattedSize(sizeBytes);
+                pipSizeText.Text = $" ({size})";
+                pipSizeRing.IsActive = false;
+                pipSizeRing.Visibility = Visibility.Collapsed;
+                pipSizeText.Visibility = Visibility.Visible;
+            }
+        }
+
+        private long GetDirectorySize(string folderPath)
+        {
+            long size = 0;
+            try
+            {
+                if (Directory.Exists(folderPath))
+                {
+                    var options = new System.IO.EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = true };
+                    string[] files = Directory.GetFiles(folderPath, "*.*", options);
+                    foreach (string file in files)
+                    {
+                        try { size += new FileInfo(file).Length; } catch { }
+                    }
+                }
+            }
+            catch { }
+            return size;
+        }
+
+        private string GetFormattedSize(long size)
+        {
+            if (size < 1024) return size + " B";
+            if (size < 1048576) return (size / 1024.0).ToString("F2") + " KB";
+            if (size < 1073741824) return (size / 1048576.0).ToString("F2") + " MB";
+            return (size / 1073741824.0).ToString("F2") + " GB";
+        }
+
+        private void FadeIn(UIElement element, double durationSeconds)
+        {
+            var fadeInAnimation = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0,
+                To = 1.0,
+                Duration = TimeSpan.FromMilliseconds(durationSeconds),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseIn }
+            };
+            element.BeginAnimation(OpacityProperty, fadeInAnimation);
+        }
+
+        private void FadeOut(UIElement element, double durationSeconds)
+        {
+            var fadeOutAnimation = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 1.0,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(durationSeconds),
+                EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
+            };
+            element.BeginAnimation(OpacityProperty, fadeOutAnimation);
         }
 
         private bool HasBattery()
@@ -58,59 +176,6 @@ namespace MakuTweakerNew
             {
                 return false;
             }
-        }
-        private string GetCmdOutput(string command, string arguments)
-        {
-            try
-            {
-                using (Process p = new Process())
-                {
-                    p.StartInfo.FileName = command;
-                    p.StartInfo.Arguments = arguments;
-                    p.StartInfo.UseShellExecute = false;
-                    p.StartInfo.RedirectStandardOutput = true;
-                    p.StartInfo.CreateNoWindow = true;
-                    p.Start();
-                    string output = p.StandardOutput.ReadToEnd();
-                    p.WaitForExit();
-                    return output.ToLower();
-                }
-            }
-            catch
-            {
-                iNKORE.UI.WPF.Modern.Controls.MessageBox.Show("CMD Error", "MakuTweaker", MessageBoxButton.OK, MessageBoxImage.Error);
-                return "";
-            }
-        }
-
-        private void RunCmdCommand(string fileName, string arguments)
-        {
-            ProcessStartInfo psi = new ProcessStartInfo
-            {
-                FileName = fileName,
-                Arguments = arguments,
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
-
-            using (Process p = new Process())
-            {
-                p.StartInfo = psi;
-                p.Start();
-            }
-        }
-
-        private bool IsPowerSettingZero(string output)
-        {
-            var lines = output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-
-            if (lines.Length >= 2)
-            {
-                return lines[lines.Length - 1].Contains("0x00000000") &&
-                       lines[lines.Length - 2].Contains("0x00000000");
-            }
-            return false;
         }
 
         private int checkWinVer()
@@ -147,10 +212,77 @@ namespace MakuTweakerNew
             MarkApplied(dism);
         }
 
-        private void temp_Click(object sender, RoutedEventArgs e)
+        private async void temp_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("cmd.exe", "/c del /q /f %temp%");
+            var languageCode = Properties.Settings.Default.lang ?? "en";
+            var sr = MainWindow.Localization.LoadLocalization(languageCode, "sr");
+
+            t.Text = sr["main"]["status"];
+            t.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            double targetWidth = t.DesiredSize.Width * 1.3;
+            pbCache.Width = targetWidth > 150 ? targetWidth : 200;
+
+            if (mw != null) mw.NavigationView_Root.IsEnabled = false;
+            temp.IsEnabled = false;
+
+            ring.Visibility = Visibility.Collapsed;
+            pbCache.Visibility = Visibility.Visible;
+            pbCache.Value = 0;
+            loadingPanel.Visibility = Visibility.Visible;
+
+            FadeIn(loadingPanel, 300);
+            await Task.Delay(300);
+
+            await Task.Run(() =>
+            {
+                string dir1 = Path.GetTempPath();
+                string dir2 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp");
+
+                List<string> filesToDelete = new List<string>();
+                List<string> dirsToDelete = new List<string>();
+
+                Action<string> scanDir = (d) => {
+                    try
+                    {
+                        if (Directory.Exists(d))
+                        {
+                            filesToDelete.AddRange(Directory.GetFiles(d, "*.*", SearchOption.AllDirectories));
+                            dirsToDelete.AddRange(Directory.GetDirectories(d, "*.*", SearchOption.AllDirectories));
+                        }
+                    }
+                    catch { }
+                };
+
+                scanDir(dir1);
+                scanDir(dir2);
+
+                int total = filesToDelete.Count;
+                if (total == 0) total = 1;
+                int current = 0;
+
+                foreach (var file in filesToDelete)
+                {
+                    try { File.Delete(file); } catch { }
+                    current++;
+                    System.Windows.Application.Current.Dispatcher.Invoke(() => pbCache.Value = (double)current / total * 100);
+                }
+
+                dirsToDelete.Sort((a, b) => b.Length.CompareTo(a.Length));
+                foreach (var dir in dirsToDelete)
+                {
+                    try { Directory.Delete(dir, false); } catch { }
+                }
+            });
+
+            FadeOut(loadingPanel, 300);
+            await Task.Delay(300);
+
+            pbCache.Visibility = Visibility.Collapsed;
+            loadingPanel.Visibility = Visibility.Collapsed;
+            if (mw != null) mw.NavigationView_Root.IsEnabled = true;
             MarkApplied(temp);
+            UpdateTempSizeLabel();
         }
 
         private void MarkApplied(MicaWPF.Controls.Button btn)
@@ -179,18 +311,29 @@ namespace MakuTweakerNew
             sfclabel.Text = sr["main"]["sfclabel"];
             dismlabel.Text = sr["main"]["dismlabel"];
             templabel.Text = sr["main"]["templabel"];
+            piplabel.Text = sr["main"]["pipcache"];
             batterylabel.Text = sr["main"]["batterylabel"];
+
+            recyclebinlabel.Text = sr["main"]["recyclebinlabel"];
+            thumbcachelabel.Text = sr["main"]["thumbcachelabel"];
+
+            UpdateTempSizeLabel();
+            UpdatePipSizeLabel();
+            UpdateRecycleBinSizeLabel();
+            UpdateThumbCacheSizeLabel();
 
             SetBtn(sfc, sr["main"]["b2"], applied);
             SetBtn(dism, sr["main"]["b2"], applied);
             SetBtn(temp, sr["main"]["b4"], applied);
+            SetBtn(pipcache, sr["main"]["b4"], applied);
+            SetBtn(recyclebin, sr["main"]["b4"], applied);
+            SetBtn(thumbcache, sr["main"]["b4"], applied);
             SetBtn(report, sr["main"]["reportbutton"], applied);
 
             bitlocker.Header = sr["main"]["bitlocker"];
             chkdsk.Header = sr["main"]["chkdsk"];
             coreisol.Header = sr["main"]["coreisol"];
             hybern.Header = sr["main"]["hybern"];
-            sleeptimeout.Header = sr["main"]["sleeptimeout"];
             smartscreen.Header = sr["main"]["smartscreen"];
             uac.Header = sr["main"]["uac"];
             sticky.Header = sr["main"]["sticky"];
@@ -221,13 +364,13 @@ namespace MakuTweakerNew
             chkdsk,
             coreisol,
             hybern,
-            sleeptimeout,
             smartscreen,
             uac,
             sticky,
             bing,
             telemetry
         };
+
         private void checkReg()
         {
             try
@@ -246,10 +389,6 @@ namespace MakuTweakerNew
                           || (Registry.CurrentUser.OpenSubKey(@"Control Panel\Accessibility\Keyboard Response")?.GetValue("Flags")?.Equals("122") ?? false);
 
                 bing.IsOn = Registry.CurrentUser.OpenSubKey(@"Software\Policies\Microsoft\Windows\Explorer")?.GetValue("DisableSearchBoxSuggestions")?.Equals(1) ?? false;
-
-                string powerVideo = GetCmdOutput("powercfg", "/q SCHEME_CURRENT SUB_VIDEO VIDEOIDLE");
-                string powerSleep = GetCmdOutput("powercfg", "/q SCHEME_CURRENT SUB_SLEEP STANDBYIDLE");
-                sleeptimeout.IsOn = IsPowerSettingZero(powerVideo) && IsPowerSettingZero(powerSleep);
             }
             catch (Exception ex)
             {
@@ -276,19 +415,9 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (sticky.IsOn)
-                {
-                    case true:
-                        Registry.CurrentUser.CreateSubKey(@"Control Panel\Accessibility\StickyKeys").SetValue("Flags", "506");
-                        Registry.CurrentUser.CreateSubKey(@"Control Panel\Accessibility\Keyboard Response").SetValue("Flags", "122");
-                        Registry.CurrentUser.CreateSubKey(@"Control Panel\Accessibility\ToggleKeys").SetValue("Flags", "58");
-                        break;
-                    case false:
-                        Registry.CurrentUser.CreateSubKey(@"Control Panel\Accessibility\StickyKeys").SetValue("Flags", "510");
-                        Registry.CurrentUser.CreateSubKey(@"Control Panel\Accessibility\Keyboard Response").SetValue("Flags", "126");
-                        Registry.CurrentUser.CreateSubKey(@"Control Panel\Accessibility\ToggleKeys").SetValue("Flags", "62");
-                        break;
-                }
+                Registry.CurrentUser.CreateSubKey(@"Control Panel\Accessibility\StickyKeys").SetValue("Flags", sticky.IsOn ? "506" : "510");
+                Registry.CurrentUser.CreateSubKey(@"Control Panel\Accessibility\Keyboard Response").SetValue("Flags", sticky.IsOn ? "122" : "126");
+                Registry.CurrentUser.CreateSubKey(@"Control Panel\Accessibility\ToggleKeys").SetValue("Flags", sticky.IsOn ? "58" : "62");
                 mw.RebootNotify(1);
             }
         }
@@ -297,15 +426,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (coreisol.IsOn)
-                {
-                    case true:
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios").SetValue("HypervisorEnforcedCodeIntegrity", 0);
-                        break;
-                    case false:
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios").SetValue("HypervisorEnforcedCodeIntegrity", 1);
-                        break;
-                }
+                Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios")
+                    .SetValue("HypervisorEnforcedCodeIntegrity", coreisol.IsOn ? 0 : 1);
                 mw.RebootNotify(1);
             }
         }
@@ -315,12 +437,11 @@ namespace MakuTweakerNew
             var languageCode = Properties.Settings.Default.lang ?? "en";
             var sr = MainWindow.Localization.LoadLocalization(languageCode, "sr");
 
-
             if (isLoaded)
             {
                 if (checkWinVer() >= 22621 && uac.IsOn)
                 {
-                    var res = iNKORE.UI.WPF.Modern.Controls.MessageBox.Show(sr["status"]["uacwarn"],"MakuTweaker", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    var res = iNKORE.UI.WPF.Modern.Controls.MessageBox.Show(sr["status"]["uacwarn"], "MakuTweaker", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
                     if (res == MessageBoxResult.No)
                     {
@@ -346,19 +467,9 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (smartscreen.IsOn)
-                {
-                    case true:
-                        Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System").SetValue("EnableSmartScreen", 0);
-                        Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer").SetValue("SmartScreenEnabled", "Off", RegistryValueKind.String);
-                        Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Policies\Attachments").SetValue("SaveZoneInformation", 1, RegistryValueKind.DWord);
-                        break;
-                    case false:
-                        Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System").SetValue("EnableSmartScreen", 1);
-                        Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer").SetValue("SmartScreenEnabled", "Warn", RegistryValueKind.String);
-                        Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Policies\Attachments").SetValue("SaveZoneInformation", 0, RegistryValueKind.DWord);
-                        break;
-                }
+                Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System").SetValue("EnableSmartScreen", smartscreen.IsOn ? 0 : 1);
+                Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer").SetValue("SmartScreenEnabled", smartscreen.IsOn ? "Off" : "Warn", RegistryValueKind.String);
+                Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Policies\Attachments").SetValue("SaveZoneInformation", smartscreen.IsOn ? 1 : 0, RegistryValueKind.DWord);
             }
         }
 
@@ -366,38 +477,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (hybern.IsOn)
-                {
-                    case true:
-                        Process.Start("cmd.exe", "/C powercfg /h off");
-                        break;
-                    case false:
-                        Process.Start("cmd.exe", "/C powercfg /h on");
-                        break;
-                }
+                Process.Start("cmd.exe", $"/C powercfg /h {(hybern.IsOn ? "off" : "on")}");
                 mw.RebootNotify(1);
-            }
-        }
-
-        private void sleeptimeout_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (isLoaded)
-            {
-                switch (sleeptimeout.IsOn)
-                {
-                    case true:
-                        RunCmdCommand("powercfg", "-change -monitor-timeout-ac 0");
-                        RunCmdCommand("powercfg", "-change -monitor-timeout-dc 0");
-                        RunCmdCommand("powercfg", "-change -standby-timeout-ac 0");
-                        RunCmdCommand("powercfg", "-change -standby-timeout-dc 0");
-                        break;
-                    case false:
-                        RunCmdCommand("powercfg", "-change -monitor-timeout-ac 10");
-                        RunCmdCommand("powercfg", "-change -monitor-timeout-dc 5");
-                        RunCmdCommand("powercfg", "-change -standby-timeout-ac 30");
-                        RunCmdCommand("powercfg", "-change -standby-timeout-dc 15");
-                        break;
-                }
             }
         }
 
@@ -405,15 +486,7 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (bing.IsOn)
-                {
-                    case true:
-                            Registry.CurrentUser.CreateSubKey(@"Software\Policies\Microsoft\Windows\Explorer").SetValue("DisableSearchBoxSuggestions", 1);
-                        break;
-                    case false:
-                            Registry.CurrentUser.CreateSubKey(@"Software\Policies\Microsoft\Windows\Explorer").SetValue("DisableSearchBoxSuggestions", 0);
-                        break;
-                }
+                Registry.CurrentUser.CreateSubKey(@"Software\Policies\Microsoft\Windows\Explorer").SetValue("DisableSearchBoxSuggestions", bing.IsOn ? 1 : 0);
             }
         }
 
@@ -421,15 +494,7 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (chkdsk.IsOn)
-                {
-                    case true:
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager").SetValue("AutoChkTimeout", 60);
-                        break;
-                    case false:
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager").SetValue("AutoChkTimeout", 8);
-                        break;
-                }
+                Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager").SetValue("AutoChkTimeout", chkdsk.IsOn ? 60 : 8);
             }
         }
 
@@ -437,15 +502,7 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (bitlocker.IsOn)
-                {
-                    case true:
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\BitLocker").SetValue("PreventDeviceEncryption", 1, RegistryValueKind.DWord);
-                        break;
-                    case false:
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\BitLocker").SetValue("PreventDeviceEncryption", 0, RegistryValueKind.DWord);
-                        break;
-                }
+                Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\BitLocker").SetValue("PreventDeviceEncryption", bitlocker.IsOn ? 1 : 0, RegistryValueKind.DWord);
             }
         }
 
@@ -485,6 +542,248 @@ namespace MakuTweakerNew
                         break;
                 }
             }
+        }
+
+        private async void pipcache_Click(object sender, RoutedEventArgs e)
+        {
+            var languageCode = Properties.Settings.Default.lang ?? "en";
+            var sr = MainWindow.Localization.LoadLocalization(languageCode, "sr");
+
+            t.Text = sr["main"]["status"];
+            t.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            double targetWidth = t.DesiredSize.Width * 1.3;
+            pbCache.Width = targetWidth > 150 ? targetWidth : 200;
+
+            if (mw != null) mw.NavigationView_Root.IsEnabled = false;
+            pipcache.IsEnabled = false;
+
+            ring.Visibility = Visibility.Collapsed;
+            pbCache.Visibility = Visibility.Visible;
+            pbCache.Value = 0;
+            loadingPanel.Visibility = Visibility.Visible;
+
+            FadeIn(loadingPanel, 300);
+            await Task.Delay(300);
+
+            await Task.Run(() =>
+            {
+                string pipDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "pip");
+
+                List<string> filesToDelete = new List<string>();
+                List<string> dirsToDelete = new List<string>();
+
+                try
+                {
+                    if (Directory.Exists(pipDir))
+                    {
+                        filesToDelete.AddRange(Directory.GetFiles(pipDir, "*.*", SearchOption.AllDirectories));
+                        dirsToDelete.AddRange(Directory.GetDirectories(pipDir, "*.*", SearchOption.AllDirectories));
+                    }
+                }
+                catch { }
+
+                int total = filesToDelete.Count;
+                if (total == 0) total = 1;
+                int current = 0;
+
+                foreach (var file in filesToDelete)
+                {
+                    try { File.Delete(file); } catch { }
+                    current++;
+                    System.Windows.Application.Current.Dispatcher.Invoke(() => pbCache.Value = (double)current / total * 100);
+                }
+
+                dirsToDelete.Sort((a, b) => b.Length.CompareTo(a.Length));
+                foreach (var dir in dirsToDelete)
+                {
+                    try { Directory.Delete(dir, false); } catch { }
+                }
+            });
+
+            FadeOut(loadingPanel, 300);
+            await Task.Delay(300);
+
+            pbCache.Visibility = Visibility.Collapsed;
+            loadingPanel.Visibility = Visibility.Collapsed;
+            if (mw != null) mw.NavigationView_Root.IsEnabled = true;
+            MarkApplied(pipcache);
+            UpdatePipSizeLabel();
+        }
+
+        private string WindowsRoot() => Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        private string SystemDriveRoot() => WindowsRoot().Substring(0, 3);
+        private async void UpdateSizeLabel(ModernWpf.Controls.ProgressRing ring, TextBlock text, StackPanel panel, Func<long> computeSize)
+        {
+            text.Visibility = Visibility.Collapsed;
+            ring.Visibility = Visibility.Visible;
+            ring.IsActive = true;
+
+            long sizeBytes = await Task.Run(computeSize);
+
+            if (sizeBytes < 104857600)
+            {
+                panel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                string size = GetFormattedSize(sizeBytes);
+                text.Text = $" ({size})";
+                ring.IsActive = false;
+                ring.Visibility = Visibility.Collapsed;
+                text.Visibility = Visibility.Visible;
+            }
+        }
+
+        private async Task CleanFilesAsync(string[] files, MicaWPF.Controls.Button btn, string statusKey, Action postAction = null)
+        {
+            var languageCode = Properties.Settings.Default.lang ?? "en";
+            var sr = MainWindow.Localization.LoadLocalization(languageCode, "sr");
+
+            t.Text = sr["main"][statusKey];
+            t.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            double targetWidth = t.DesiredSize.Width * 1.3;
+            pbCache.Width = targetWidth > 150 ? targetWidth : 200;
+
+            if (mw != null) mw.NavigationView_Root.IsEnabled = false;
+            btn.IsEnabled = false;
+
+            ring.Visibility = Visibility.Collapsed;
+            pbCache.Visibility = Visibility.Visible;
+            pbCache.Value = 0;
+            loadingPanel.Visibility = Visibility.Visible;
+
+            FadeIn(loadingPanel, 300);
+            await Task.Delay(300);
+
+            await Task.Run(() =>
+            {
+                int total = files.Length;
+                if (total == 0) total = 1;
+                int current = 0;
+
+                foreach (var file in files)
+                {
+                    try { File.Delete(file); } catch { }
+                    current++;
+                    System.Windows.Application.Current.Dispatcher.Invoke(() => pbCache.Value = (double)current / total * 100);
+                }
+
+                try { postAction?.Invoke(); } catch { }
+            });
+
+            FadeOut(loadingPanel, 300);
+            await Task.Delay(300);
+
+            pbCache.Visibility = Visibility.Collapsed;
+            loadingPanel.Visibility = Visibility.Collapsed;
+            if (mw != null) mw.NavigationView_Root.IsEnabled = true;
+            MarkApplied(btn);
+        }
+        private void RestartExplorer()
+        {
+            try
+            {
+                foreach (var proc in Process.GetProcessesByName("explorer"))
+                {
+                    try { proc.Kill(); } catch { }
+                }
+            }
+            catch { }
+        }
+
+        private void UpdateRecycleBinSizeLabel()
+            => UpdateSizeLabel(recyclebinSizeRing, recyclebinSizeText, recyclebinFullPanel, () =>
+            {
+                long total = 0;
+                foreach (var drive in DriveInfo.GetDrives())
+                {
+                    try
+                    {
+                        if (drive.IsReady && drive.DriveType == DriveType.Fixed)
+                            total += GetDirectorySize(Path.Combine(drive.Name, "$Recycle.Bin"));
+                    }
+                    catch { }
+                }
+                return total;
+            });
+
+        private void UpdateThumbCacheSizeLabel()
+            => UpdateSizeLabel(thumbcacheSizeRing, thumbcacheSizeText, thumbcacheFullPanel, () =>
+            {
+                long total = 0;
+                string dir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Microsoft", "Windows", "Explorer");
+                try
+                {
+                    if (Directory.Exists(dir))
+                        foreach (var f in Directory.GetFiles(dir, "thumbcache_*.db"))
+                            try { total += new FileInfo(f).Length; } catch { }
+                }
+                catch { }
+                return total;
+            });
+
+        private async void recyclebin_Click(object sender, RoutedEventArgs e)
+        {
+            var languageCode = Properties.Settings.Default.lang ?? "en";
+            var sr = MainWindow.Localization.LoadLocalization(languageCode, "sr");
+
+            t.Text = sr["main"]["status"];
+            t.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            double targetWidth = t.DesiredSize.Width * 1.3;
+            pbCache.Width = targetWidth > 150 ? targetWidth : 200;
+
+            if (mw != null) mw.NavigationView_Root.IsEnabled = false;
+            recyclebin.IsEnabled = false;
+
+            pbCache.Visibility = Visibility.Collapsed;
+            ring.Visibility = Visibility.Visible;
+            ring.IsActive = true;
+            loadingPanel.Visibility = Visibility.Visible;
+
+            FadeIn(loadingPanel, 300);
+            await Task.Delay(300);
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    SHEmptyRecycleBin(IntPtr.Zero, null,
+                        RecycleFlags.SHERB_NOCONFIRMATION | RecycleFlags.SHERB_NOPROGRESSUI | RecycleFlags.SHERB_NOSOUND);
+                }
+                catch { }
+            });
+
+            FadeOut(loadingPanel, 300);
+            await Task.Delay(300);
+
+            ring.IsActive = false;
+            ring.Visibility = Visibility.Collapsed;
+            loadingPanel.Visibility = Visibility.Collapsed;
+
+            if (mw != null) mw.NavigationView_Root.IsEnabled = true;
+            MarkApplied(recyclebin);
+            UpdateRecycleBinSizeLabel();
+        }
+
+        private async void thumbcache_Click(object sender, RoutedEventArgs e)
+        {
+            string explorerDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Microsoft", "Windows", "Explorer");
+
+            string[] files = Array.Empty<string>();
+            try
+            {
+                if (Directory.Exists(explorerDir))
+                    files = Directory.GetFiles(explorerDir, "thumbcache_*.db");
+            }
+            catch { }
+
+            await CleanFilesAsync(files, thumbcache, "status", postAction: RestartExplorer);
+            UpdateThumbCacheSizeLabel();
         }
     }
 }

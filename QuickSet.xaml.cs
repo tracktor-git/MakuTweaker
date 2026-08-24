@@ -110,7 +110,8 @@ namespace MakuTweakerNew
             var quick = MainWindow.Localization.LoadLocalization(languageCode, "quick");
             if (Application.Current.MainWindow is MainWindow mainWindow)
             {
-                mainWindow.c6.Visibility = (visibleCount < 5) ? Visibility.Collapsed : Visibility.Visible;
+                bool shouldHide = !Properties.Settings.Default.showhiddentabs && (visibleCount < 5);
+                mainWindow.c6.Visibility = shouldHide ? Visibility.Collapsed : Visibility.Visible;
             }
 
             if (visibleCount == 0)

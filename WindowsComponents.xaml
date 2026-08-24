@@ -15,7 +15,7 @@
             <TextBlock x:Name="label" HorizontalAlignment="Left" Margin="24,11,0,0" TextWrapping="Wrap" Text="Windows Components" VerticalAlignment="Top" FontSize="32" FontFamily="Segoe UI Semibold"/>
 
             <StackPanel Orientation="Horizontal">
-                <TextBlock x:Name="directplay" HorizontalAlignment="Left" Margin="24,10,0,0" TextWrapping="Wrap" Text="Install DirectPlay" VerticalAlignment="Top" FontSize="16"/>
+                <TextBlock x:Name="directplay" HorizontalAlignment="Left" Margin="24,10,0,0" TextWrapping="Wrap" Text="Install DirectPlay" VerticalAlignment="Top" FontSize="18"/>
                 <controls:Button Content="?" Width="18" Height="18" Margin="8,10,0,0" FontSize="14" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                     <controls:Button.ToolTip>
                         <ToolTip MaxWidth="500" x:Name="sys_tooltip_directplay"/>
@@ -30,7 +30,7 @@
                 <controls:Button x:Name="dp" Padding="20,5" Content="Install" Height="28" Click="dp_Click"/>
             </Grid>
 
-            <TextBlock x:Name="framework" HorizontalAlignment="Left" Margin="24,10,0,0" TextWrapping="Wrap" Text="Install .NET Framework 2.0, 3.0, 3.5" VerticalAlignment="Top" FontSize="16"/>
+            <TextBlock x:Name="framework" HorizontalAlignment="Left" Margin="24,10,0,0" TextWrapping="Wrap" Text="Install .NET Framework 2.0, 3.0, 3.5" VerticalAlignment="Top" FontSize="18"/>
 
             <Grid HorizontalAlignment="Left" Margin="24,5,0,0" VerticalAlignment="Top">
                 <Grid.ColumnDefinitions>
@@ -39,7 +39,7 @@
                 <controls:Button x:Name="dnet" Padding="20,5" Content="Install" Height="28" Click="dnet_Click"/>
             </Grid>
 
-            <TextBlock x:Name="winsxs" HorizontalAlignment="Left" Margin="24,10,0,0" TextWrapping="Wrap" Text="Reset Outdated Components And WinSxS Cache" VerticalAlignment="Top" FontSize="16"/>
+            <TextBlock x:Name="winsxs" HorizontalAlignment="Left" Margin="24,10,0,0" TextWrapping="Wrap" Text="Reset Outdated Components And WinSxS Cache" VerticalAlignment="Top" FontSize="18"/>
             <Grid HorizontalAlignment="Left" Margin="24,5,0,0" VerticalAlignment="Top">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" SharedSizeGroup="MainActionButtons"/>
@@ -48,7 +48,7 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal" Margin="24,10,0,0">
-                <TextBlock x:Name="photoviewer" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Enable Old Windows Photo Viewer" VerticalAlignment="Top" FontSize="16"/>
+                <TextBlock x:Name="photoviewer" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Enable Old Windows Photo Viewer" VerticalAlignment="Top" FontSize="18"/>
                 <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="14" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                     <controls:Button.ToolTip>
                         <ToolTip MaxWidth="500" x:Name="sys_tooltip_photo"/>
@@ -63,7 +63,7 @@
                 <controls:Button x:Name="pv" Padding="20,5" Content="Enable" Height="28" Click="pv_Click"/>
             </Grid>
 
-            <TextBlock x:Name="gpedit" HorizontalAlignment="Left" Margin="24,10,0,0" TextWrapping="Wrap" Visibility="Collapsed" Text="Enable Local Group Policy Editor" VerticalAlignment="Top" FontSize="16"/>
+            <TextBlock x:Name="gpedit" HorizontalAlignment="Left" Margin="24,10,0,0" TextWrapping="Wrap" Visibility="Collapsed" Text="Enable Local Group Policy Editor" VerticalAlignment="Top" FontSize="18"/>
 
             <Grid x:Name="lgpGrid" HorizontalAlignment="Left" Margin="24,5,0,0" VerticalAlignment="Top" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
@@ -73,7 +73,7 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal" Margin="24,10,0,0">
-                <TextBlock x:Name="powershellscr" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Enable Third-Party PowerShell Scripts" VerticalAlignment="Top" FontSize="16"/>
+                <TextBlock x:Name="powershellscr" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Enable Third-Party PowerShell Scripts" VerticalAlignment="Top" FontSize="18"/>
                 <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="14" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                     <controls:Button.ToolTip>
                         <ToolTip MaxWidth="500" x:Name="sys_tooltip_powershell"/>
@@ -89,7 +89,7 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal" Margin="24,10,0,0">
-                <TextBlock x:Name="xboxdvr" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Disable Xbox DVR Requirement" VerticalAlignment="Top" FontSize="16"/>
+                <TextBlock x:Name="xboxdvr" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Disable Xbox DVR Requirement" VerticalAlignment="Top" FontSize="18"/>
                 <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="14" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                     <controls:Button.ToolTip>
                         <ToolTip MaxWidth="500" x:Name="sys_tooltip_xbox"/>
@@ -105,7 +105,7 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal" Margin="24,10,0,0">
-                <TextBlock x:Name="forcedis" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Force Hyper-V Disable" VerticalAlignment="Top" FontSize="16"/>
+                <TextBlock x:Name="forcedis" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Force Hyper-V Disable" VerticalAlignment="Top" FontSize="18"/>
                 <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="14" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                     <controls:Button.ToolTip>
                         <ToolTip MaxWidth="500" x:Name="sys_tooltip_hyperv"/>

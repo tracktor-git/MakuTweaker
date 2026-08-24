@@ -9,7 +9,7 @@
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <AssemblyName>MakuTweaker</AssemblyName>
     <Authors>MarkAdderly</Authors>
-    <Version>5.7.3</Version>
+    <Version>5.8.7</Version>
     <PackageIcon>MakuTweakerNEWnoround.png</PackageIcon>
     <PackageProjectUrl>https://adderly.top</PackageProjectUrl>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -17,8 +17,8 @@
 	  <ApplicationIcon>assets/icons/MakuTweaker.ico</ApplicationIcon>
 	  <PlatformTarget>x64</PlatformTarget>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-    <FileVersion>5.7.3</FileVersion>
-    <AssemblyVersion>5.7.3</AssemblyVersion>
+    <FileVersion>5.8.7</FileVersion>
+    <AssemblyVersion>5.8.7</AssemblyVersion>
     <Title>MakuTweaker</Title>
     <Copyright>MarkAdderly</Copyright>
     <PackageTags>makutweaker</PackageTags>
@@ -55,6 +55,7 @@
     <PackageReference Include="ModernWpfUI" Version="0.9.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NvAPIWrapper.Net" Version="0.8.1.101" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.8" />
     <PackageReference Include="System.Management" Version="9.0.9" />
     <PackageReference Include="Vortice.DirectX" Version="3.6.2" />
     <PackageReference Include="Vortice.DXGI" Version="3.6.2" />
@@ -71,10 +72,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="SiteBan.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="MakuYan.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="HidePart.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WinInfo.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Perf.xaml.cs">

@@ -68,7 +68,22 @@
     <Setting Name="ProcessNameDisplayMode" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
+    <Setting Name="GraphUpdateSpeedMs" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="LastPerformanceTab" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Cpu</Value>
+    </Setting>
+    <Setting Name="LastMainTab" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Processes</Value>
+    </Setting>
+    <Setting Name="ShowHidden_processMGR" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
     <Setting Name="disableTelemetry" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="showhiddentabs" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>

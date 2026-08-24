@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -115,19 +116,24 @@ namespace MakuTweakerNew
                                 wuKey.SetValue("DisableWindowsUpdateAccess", 1, RegistryValueKind.DWord);
                                 wuKey.SetValue("DisableDualScan", 1, RegistryValueKind.DWord);
                                 Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU").SetValue("NoAutoUpdate", 1, RegistryValueKind.DWord);
+
+                                RunCmdCommand("cmd.exe", "/c takeown /f \"%windir%\\System32\\UsoClient.exe\" /a");
+                                RunCmdCommand("cmd.exe", "/c icacls \"%windir%\\System32\\UsoClient.exe\" /grant *S-1-5-32-544:F /q");
+                                RunCmdCommand("cmd.exe", "/c if exist \"%windir%\\System32\\UsoClient.exe\" ren \"%windir%\\System32\\UsoClient.exe\" UsoClient.bak");
+
+                                RunCmdCommand("reg", "add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tree\\Microsoft\\Windows\\WindowsUpdate\" /v \"Actions\" /t REG_SZ /d \"\" /f");
+                                RunCmdCommand("reg", "add \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tree\\Microsoft\\Windows\\UpdateOrchestrator\" /v \"Actions\" /t REG_SZ /d \"\" /f");
+
                                 try
                                 {
-                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\wuauserv").SetValue("Start", 4);
-                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\UsoSvc").SetValue("Start", 4);
-                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\WaaSMedicSvc").SetValue("Start", 4);
+                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\wuauserv")?.SetValue("Start", 4);
+                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\UsoSvc")?.SetValue("Start", 4);
+                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\WaaSMedicSvc")?.SetValue("Start", 4);
+                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\dosvc")?.SetValue("Start", 4);
+                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\bits")?.SetValue("Start", 4);
                                 }
                                 catch { }
-                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\WindowsUpdate\\Scheduled Start\" /disable");
-                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\UpdateOrchestrator\\Universal Orchestrator Start\" /disable");
-                                RunCmdCommand("cmd.exe", "/c \"echo 127.0.0.1 index.wp.microsoft.com >> %windir%\\system32\\drivers\\etc\\hosts\"");
-                                RunCmdCommand("cmd.exe", "/c \"echo 127.0.0.1 update.microsoft.com >> %windir%\\system32\\drivers\\etc\\hosts\"");
-                                RunCmdCommand("cmd.exe", "/c \"echo 127.0.0.1 slscr.update.microsoft.com >> %windir%\\system32\\drivers\\etc\\hosts\"");
-                                RunCmdCommand("cmd.exe", "/c \"echo 127.0.0.1 fe2.update.microsoft.com >> %windir%\\system32\\drivers\\etc\\hosts\"");
+
                                 try
                                 {
                                     RunCmdCommand("taskkill", "/f /im wuauclt.exe");
@@ -135,9 +141,29 @@ namespace MakuTweakerNew
                                     RunCmdCommand("net", "stop wuauserv /y");
                                     RunCmdCommand("net", "stop bits /y");
                                     RunCmdCommand("net", "stop UsoSvc /y");
+                                    RunCmdCommand("net", "stop dosvc /y");
                                 }
                                 catch { }
 
+                                RunCmdCommand("powershell.exe", "-NoProfile -ExecutionPolicy Bypass -Command \"Get-ScheduledTask -TaskPath '\\Microsoft\\Windows\\WindowsUpdate\\' -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue\"");
+                                RunCmdCommand("powershell.exe", "-NoProfile -ExecutionPolicy Bypass -Command \"Get-ScheduledTask -TaskPath '\\Microsoft\\Windows\\UpdateOrchestrator\\' -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue\"");
+                                RunCmdCommand("powershell.exe", "-NoProfile -ExecutionPolicy Bypass -Command \"Get-ScheduledTask -TaskPath '\\Microsoft\\Windows\\WaaSMedic\\' -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue\"");
+
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\WindowsUpdate\\Scheduled Start\" /disable");
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\UpdateOrchestrator\\Universal Orchestrator Start\" /disable");
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\UpdateOrchestrator\\Schedule Scan\" /disable");
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\UpdateOrchestrator\\Schedule Scan Static\" /disable");
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\UpdateOrchestrator\\UpdateModelTask\" /disable");
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\UpdateOrchestrator\\USO_UxBroker\" /disable");
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\WaaSMedic\\PerformRemediation\" /disable");
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\Filler\\SIH\" /disable");
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\Setup\\EOSNotify\" /disable");
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\Setup\\UpdateNotificationMgr\" /disable");
+
+                                RunCmdCommand("cmd.exe", "/c \"echo 127.0.0.1 index.wp.microsoft.com >> %windir%\\system32\\drivers\\etc\\hosts\"");
+                                RunCmdCommand("cmd.exe", "/c \"echo 127.0.0.1 update.microsoft.com >> %windir%\\system32\\drivers\\etc\\hosts\"");
+                                RunCmdCommand("cmd.exe", "/c \"echo 127.0.0.1 slscr.update.microsoft.com >> %windir%\\system32\\drivers\\etc\\hosts\"");
+                                RunCmdCommand("cmd.exe", "/c \"echo 127.0.0.1 fe2.update.microsoft.com >> %windir%\\system32\\drivers\\etc\\hosts\"");
                                 RunCmdCommand("cmd.exe", "/c ipconfig /flushdns");
                             }
                             catch { }
@@ -175,16 +201,33 @@ namespace MakuTweakerNew
                                     wuKeyRestore.SetValue("DisableWindowsUpdateAccess", 0, RegistryValueKind.DWord);
                                     wuKeyRestore.SetValue("DisableDualScan", 0, RegistryValueKind.DWord);
                                 }
+
+                                RunCmdCommand("reg", "delete \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tree\\Microsoft\\Windows\\WindowsUpdate\" /v \"Actions\" /f");
+                                RunCmdCommand("reg", "delete \"HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tree\\Microsoft\\Windows\\UpdateOrchestrator\" /v \"Actions\" /f");
+
+                                RunCmdCommand("cmd.exe", "/c if exist \"%windir%\\System32\\UsoClient.bak\" ren \"%windir%\\System32\\UsoClient.bak\" UsoClient.exe");
+
                                 try
                                 {
-                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\wuauserv").SetValue("Start", 3);
-                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\UsoSvc").SetValue("Start", 2);
-                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\WaaSMedicSvc").SetValue("Start", 3);
+                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\wuauserv")?.SetValue("Start", 3);
+                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\UsoSvc")?.SetValue("Start", 2);
+                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\WaaSMedicSvc")?.SetValue("Start", 3);
+                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\dosvc")?.SetValue("Start", 2);
+                                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\bits")?.SetValue("Start", 3);
+
                                     RunCmdCommand("net", "start UsoSvc");
                                 }
                                 catch { }
+
+                                RunCmdCommand("powershell.exe", "-NoProfile -ExecutionPolicy Bypass -Command \"Get-ScheduledTask -TaskPath '\\Microsoft\\Windows\\WindowsUpdate\\' -ErrorAction SilentlyContinue | Enable-ScheduledTask -ErrorAction SilentlyContinue\"");
+                                RunCmdCommand("powershell.exe", "-NoProfile -ExecutionPolicy Bypass -Command \"Get-ScheduledTask -TaskPath '\\Microsoft\\Windows\\UpdateOrchestrator\\' -ErrorAction SilentlyContinue | Enable-ScheduledTask -ErrorAction SilentlyContinue\"");
+                                RunCmdCommand("powershell.exe", "-NoProfile -ExecutionPolicy Bypass -Command \"Get-ScheduledTask -TaskPath '\\Microsoft\\Windows\\WaaSMedic\\' -ErrorAction SilentlyContinue | Enable-ScheduledTask -ErrorAction SilentlyContinue\"");
+
                                 RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\WindowsUpdate\\Scheduled Start\" /enable");
                                 RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\UpdateOrchestrator\\Universal Orchestrator Start\" /enable");
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\UpdateOrchestrator\\Schedule Scan\" /enable");
+                                RunCmdCommand("schtasks", "/change /tn \"\\Microsoft\\Windows\\UpdateOrchestrator\\USO_UxBroker\" /enable");
+
                                 RunCmdCommand("powershell.exe", "-Command \"(Get-Content $env:windir\\system32\\drivers\\etc\\hosts) | Where-Object { $_ -notmatch 'microsoft.com' } | Set-Content $env:windir\\system32\\drivers\\etc\\hosts\"");
                                 RunCmdCommand("cmd.exe", "/c ipconfig /flushdns");
                             }
@@ -214,29 +257,19 @@ namespace MakuTweakerNew
                         {
                             Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate").SetValue("ExcludeWUDriversInQualityUpdate", 1);
                         }
-                        catch
-                        {
-
-                        }
+                        catch { }
                         break;
                     case false:
                         try
                         {
                             Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate").SetValue("ExcludeWUDriversInQualityUpdate", 0);
                         }
-                        catch
-                        {
-
-                        }
+                        catch { }
                         break;
                 }
             }
         }
 
-        private void wu4_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
         private int checkWinVer()
         {
             string keyPath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
@@ -355,6 +388,7 @@ namespace MakuTweakerNew
                 }
             }
         }
+
         private void LoadLang(string lang)
         {
             var languageCode = Properties.Settings.Default.lang ?? "en";
@@ -370,6 +404,8 @@ namespace MakuTweakerNew
             blockL.Text = wu["main"]["wu2"];
             l7.Text = wu["main"]["wu4"];
 
+            UpdateCacheSizeLabel();
+
             SetBtn(pause, wu["main"]["wu5b"], applied);
             block.Content = isUpdatesBlocked ? wu["main"]["wu6u"] : wu["main"]["wu6b"];
             SetBtn(wupd, sr["main"]["b4"], applied);
@@ -379,6 +415,66 @@ namespace MakuTweakerNew
                 toggle.OnContent = main["def"]["on"];
                 toggle.OffContent = main["def"]["off"];
             }
+        }
+
+        private async void UpdateCacheSizeLabel()
+        {
+            wuCacheFullPanel.Visibility = Visibility.Visible;
+            cacheSizeText.Visibility = Visibility.Collapsed;
+            cacheSizeRing.Visibility = Visibility.Visible;
+            cacheSizeRing.IsActive = true;
+
+            long sizeBytes = await Task.Run(() => GetCacheSizeBytes());
+            if (sizeBytes < 1048576)
+            {
+                wuCacheFullPanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                string sizeStr = GetFormattedSize(sizeBytes);
+                cacheSizeText.Text = $" ({sizeStr})";
+                cacheSizeRing.IsActive = false;
+                cacheSizeRing.Visibility = Visibility.Collapsed;
+                cacheSizeText.Visibility = Visibility.Visible;
+            }
+        }
+
+        private long GetCacheSizeBytes()
+        {
+            long size = 0;
+            string dir1 = System.IO.Path.Combine(Environment.GetEnvironmentVariable("windir"), @"SoftwareDistribution\Download");
+            string dir2 = System.IO.Path.Combine(Environment.GetEnvironmentVariable("windir"), @"ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Cache");
+
+            size += GetDirectorySize(dir1);
+            size += GetDirectorySize(dir2);
+
+            return size;
+        }
+
+        private string GetFormattedSize(long size)
+        {
+            if (size < 1024) return size + " B";
+            if (size < 1048576) return (size / 1024.0).ToString("F2") + " KB";
+            if (size < 1073741824) return (size / 1048576.0).ToString("F2") + " MB";
+            return (size / 1073741824.0).ToString("F2") + " GB";
+        }
+
+        private long GetDirectorySize(string folderPath)
+        {
+            long size = 0;
+            try
+            {
+                if (Directory.Exists(folderPath))
+                {
+                    string[] files = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories);
+                    foreach (string file in files)
+                    {
+                        size += new FileInfo(file).Length;
+                    }
+                }
+            }
+            catch { }
+            return size;
         }
 
         private List<ModernWpf.Controls.ToggleSwitch> AllToggles => new()
@@ -395,10 +491,12 @@ namespace MakuTweakerNew
             var basel = MainWindow.Localization.LoadLocalization(languageCode, "base");
             btn.Content = basel["def"]["applied"];
         }
+
         private void SetBtn(Button btn, string normalText, string appliedText)
         {
             btn.Content = btn.IsEnabled ? normalText : appliedText;
         }
+
         private void checkReg()
         {
             wu1.IsOn = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU")?.GetValue("NoAutoUpdate")?.Equals(1) ?? false;
@@ -428,28 +526,78 @@ namespace MakuTweakerNew
             pause.IsEnabled = string.IsNullOrEmpty(pauseTime) || !pauseTime.Contains("2077");
             wupd.IsEnabled = true;
         }
+
         private async void wupd_Click(object sender, RoutedEventArgs e)
         {
             var languageCode = Properties.Settings.Default.lang ?? "en";
             var wu = MainWindow.Localization.LoadLocalization(languageCode, "wu");
+
             t.Text = wu["main"]["status"];
+            t.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            double targetWidth = t.DesiredSize.Width * 1.3;
+            pbCache.Width = targetWidth > 150 ? targetWidth : 200;
+
             var mw = (MainWindow)Application.Current.MainWindow;
             if (mw != null) mw.NavigationView_Root.IsEnabled = false;
             wupd.IsEnabled = false;
-            ring.IsActive = true;
+
+            ring.Visibility = Visibility.Collapsed;
+            pbCache.Visibility = Visibility.Visible;
+            pbCache.Value = 0;
+
             FadeIn(loadingPanel, 300);
             await Task.Delay(300);
+
             await Task.Run(() =>
             {
-                RunCmdCommand("cmd.exe", "/c del /f /s /q %windir%\\SoftwareDistribution\\Download\\*");
+                string dir1 = System.IO.Path.Combine(Environment.GetEnvironmentVariable("windir"), @"SoftwareDistribution\Download");
+                string dir2 = System.IO.Path.Combine(Environment.GetEnvironmentVariable("windir"), @"ServiceProfiles\NetworkService\AppData\Local\Microsoft\Windows\DeliveryOptimization\Cache");
+
+                List<string> filesToDelete = new List<string>();
+                List<string> dirsToDelete = new List<string>();
+
+                Action<string> scanDir = (d) => {
+                    try
+                    {
+                        if (Directory.Exists(d))
+                        {
+                            filesToDelete.AddRange(Directory.GetFiles(d, "*.*", SearchOption.AllDirectories));
+                            dirsToDelete.AddRange(Directory.GetDirectories(d, "*.*", SearchOption.AllDirectories));
+                        }
+                    }
+                    catch { }
+                };
+
+                scanDir(dir1);
+                scanDir(dir2);
+
+                int total = filesToDelete.Count;
+                if (total == 0) total = 1;
+                int current = 0;
+
+                foreach (var file in filesToDelete)
+                {
+                    try { File.Delete(file); } catch { }
+                    current++;
+                    Application.Current.Dispatcher.Invoke(() => pbCache.Value = (double)current / total * 100);
+                }
+
+                dirsToDelete.Sort((a, b) => b.Length.CompareTo(a.Length));
+                foreach (var dir in dirsToDelete)
+                {
+                    try { Directory.Delete(dir, false); } catch { }
+                }
             });
 
             FadeOut(loadingPanel, 300);
             await Task.Delay(300);
+            pbCache.Visibility = Visibility.Collapsed;
+            ring.Visibility = Visibility.Visible;
             ring.IsActive = false;
-
             if (mw != null) mw.NavigationView_Root.IsEnabled = true;
             MarkApplied(wupd);
+            UpdateCacheSizeLabel();
         }
 
         private void FadeIn(UIElement element, double durationSeconds)

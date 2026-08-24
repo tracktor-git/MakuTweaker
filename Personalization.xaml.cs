@@ -281,15 +281,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (endtask.IsOn)
-                {
-                    case true:
-                        Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings").SetValue("TaskbarEndTask", 1);
-                        break;
-                    case false:
-                        Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings").SetValue("TaskbarEndTask", 0);
-                        break;
-                }
+                Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced\TaskbarDeveloperSettings")
+                    .SetValue("TaskbarEndTask", endtask.IsOn ? 1 : 0);
             }
         }
 
@@ -297,17 +290,9 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (smallwindows.IsOn)
-                {
-                    case true:
-                        RunCmdCommand("reg.exe", "add \"HKEY_CURRENT_USER\\Control Panel\\Desktop\\WindowMetrics\" /v CaptionHeight /t REG_SZ /d -270 /f");
-                        RunCmdCommand("reg.exe", "add \"HKEY_CURRENT_USER\\Control Panel\\Desktop\\WindowMetrics\" /v CaptionWidth /t REG_SZ /d -270 /f");
-                        break;
-                    case false:
-                        RunCmdCommand("reg.exe", "add \"HKEY_CURRENT_USER\\Control Panel\\Desktop\\WindowMetrics\" /v CaptionHeight /t REG_SZ /d -330 /f");
-                        RunCmdCommand("reg.exe", "add \"HKEY_CURRENT_USER\\Control Panel\\Desktop\\WindowMetrics\" /v CaptionWidth /t REG_SZ /d -330 /f");
-                        break;
-                }
+                string metricsValue = smallwindows.IsOn ? "-270" : "-330";
+                RunCmdCommand("reg.exe", $"add \"HKEY_CURRENT_USER\\Control Panel\\Desktop\\WindowMetrics\" /v CaptionHeight /t REG_SZ /d {metricsValue} /f");
+                RunCmdCommand("reg.exe", $"add \"HKEY_CURRENT_USER\\Control Panel\\Desktop\\WindowMetrics\" /v CaptionWidth /t REG_SZ /d {metricsValue} /f");
                 mw.RebootNotify(1);
             }
         }
@@ -316,15 +301,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (blur.IsOn)
-                {
-                    case true:
-                        Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Policies\Microsoft\Windows\System").SetValue("DisableAcrylicBackgroundOnLogon", 1);
-                        break;
-                    case false:
-                        Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Policies\Microsoft\Windows\System").SetValue("DisableAcrylicBackgroundOnLogon", 0);
-                        break;
-                }
+                Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Policies\Microsoft\Windows\System")
+                    .SetValue("DisableAcrylicBackgroundOnLogon", blur.IsOn ? 1 : 0);
             }
         }
 
@@ -332,15 +310,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (transparency.IsOn)
-                {
-                    case true:
-                        Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").SetValue("EnableTransparency", 0);
-                        break;
-                    case false:
-                        Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").SetValue("EnableTransparency", 1);
-                        break;
-                }
+                Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize")
+                    .SetValue("EnableTransparency", transparency.IsOn ? 0 : 1);
             }
         }
 
@@ -348,17 +319,9 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (darktheme.IsOn)
-                {
-                    case true:
-                        Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").SetValue("AppsUseLightTheme", 0);
-                        Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").SetValue("SystemUsesLightTheme", 0);
-                        break;
-                    case false:
-                        Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").SetValue("AppsUseLightTheme", 1);
-                        Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").SetValue("SystemUsesLightTheme", 1);
-                        break;
-                }
+                int themeValue = darktheme.IsOn ? 0 : 1;
+                Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").SetValue("AppsUseLightTheme", themeValue);
+                Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize").SetValue("SystemUsesLightTheme", themeValue);
                 mw.RebootNotify(2);
             }
         }
@@ -367,15 +330,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (verbose.IsOn)
-                {
-                    case true:
-                        Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System").SetValue("verbosestatus", 1);
-                        break;
-                    case false:
-                        Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System").SetValue("verbosestatus", 0);
-                        break;
-                }
+                Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System")
+                    .SetValue("verbosestatus", verbose.IsOn ? 1 : 0);
             }
         }
 
@@ -383,17 +339,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (disablelogo.IsOn)
-                {
-                    case true:
-                        RunCmdCommand("bcdedit", "/set \"{globalsettings}\" custom:16000067 true");
-                        mw.RebootNotify(1);
-                        break;
-                    case false:
-                        RunCmdCommand("bcdedit", "/deletevalue \"{globalsettings}\" custom:16000067");
-                        mw.RebootNotify(1);
-                        break;
-                }
+                RunCmdCommand("bcdedit", disablelogo.IsOn ? "/set \"{globalsettings}\" custom:16000067 true" : "/deletevalue \"{globalsettings}\" custom:16000067");
+                mw.RebootNotify(1);
             }
         }
 
@@ -401,17 +348,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (disableanim.IsOn)
-                {
-                    case true:
-                        RunCmdCommand("bcdedit", "/set \"{globalsettings}\" custom:16000069 true");
-                        mw.RebootNotify(1);
-                        break;
-                    case false:
-                        RunCmdCommand("bcdedit", "/deletevalue \"{globalsettings}\" custom:16000069");
-                        mw.RebootNotify(1);
-                        break;
-                }
+                RunCmdCommand("bcdedit", disableanim.IsOn ? "/set \"{globalsettings}\" custom:16000069 true" : "/deletevalue \"{globalsettings}\" custom:16000069");
+                mw.RebootNotify(1);
             }
         }
 
@@ -419,20 +357,13 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (oldcont.IsOn)
-                {
-                    case true:
-                        Process.Start("cmd.exe", "/c \"reg.exe add \"HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32\" /f /ve\"");
-                        Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel").SetValue("{20D04FE0-3AEA-1069-A2D8-08002B30309D}", 0);
-                        break;
-                    case false:
-                        {
-                            Process.Start("cmd.exe", "/c \"reg delete \"HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32\" /f\"");
-                            Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel").SetValue("{20D04FE0-3AEA-1069-A2D8-08002B30309D}", 0);
-                            break;
-                        }
-                }
-                mw.RebootNotify(2);
+                string cmdArg = oldcont.IsOn
+                    ? "/c \"reg.exe add \"HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32\" /f /ve\""
+                    : "/c \"reg delete \"HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32\" /f\"";
+                Process.Start("cmd.exe", cmdArg);
+
+                Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel")
+                    .SetValue("{20D04FE0-3AEA-1069-A2D8-08002B30309D}", 0);
             }
         }
 
@@ -440,15 +371,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (contdel.IsOn)
-                {
-                    case true:
-                        Registry.CurrentUser.CreateSubKey(@"Control Panel\Desktop").SetValue("MenuShowDelay", "50");
-                        break;
-                    case false:
-                        Registry.CurrentUser.CreateSubKey(@"Control Panel\Desktop").SetValue("MenuShowDelay", "400");
-                        break;
-                }
+                Registry.CurrentUser.CreateSubKey(@"Control Panel\Desktop")
+                    .SetValue("MenuShowDelay", contdel.IsOn ? "50" : "400");
                 mw.RebootNotify(2);
             }
         }

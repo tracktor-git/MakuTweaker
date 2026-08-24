@@ -8,8 +8,8 @@
         xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
         mc:Ignorable="d" ui:ThemeManager.RequestedTheme="Default"
         Title="MakuTweaker"
-        Height="675" MinHeight="675" MaxHeight="675"
-        Width="1062" MinWidth="1062" MaxWidth="1062"
+        Height="710" MinHeight="710" MaxHeight="710"
+        Width="1150" MinWidth="1150" MaxWidth="1150"
         SystemBackdropType="Tabbed" WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
         UseLayoutRounding="True"
@@ -135,9 +135,14 @@
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.AllApps}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
-                <ui:NavigationViewItem x:Name="c13" Tag="pci" Content="PC Information">
+                <ui:NavigationViewItem x:Name="c13" Tag="wininfo" Content="Sys Information">
                     <ui:NavigationViewItem.Icon>
                         <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Info}" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem x:Name="c14" Tag="pci" Content="PC Information">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon Icon="{x:Static ui:SegoeFluentIcons.Component}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>

@@ -9,20 +9,14 @@ using MicaWPF.Core.Helpers;
 using MicaWPF.Core.Services;
 using Microsoft.Win32;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Management;
 using System.Net.Http;
 using System.Reflection;
-using System.Runtime;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -41,50 +35,84 @@ using Windows.UI;
 using Windows.UI.Notifications;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using System.Threading.Tasks;
+using System.Linq;
+using System;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace MakuTweakerNew
 {
     public partial class MainWindow : MicaWindow
     {
-		private NavigationTransitionInfo _transitionInfo = null;
+        private NavigationTransitionInfo _transitionInfo = null;
         private DispatcherTimer ExpRestart;
         public static bool HasAutoStartedExclusive = false;
+
+        public static bool IsPortableMode => string.IsNullOrEmpty(Assembly.GetExecutingAssembly().Location) ||
+                                     (Process.GetCurrentProcess().MainModule?.FileName != null &&
+                                      Process.GetCurrentProcess().MainModule.FileName.IndexOf("portable", StringComparison.OrdinalIgnoreCase) >= 0);
 
         public static class Localization
         {
             public static Dictionary<string, Dictionary<string, string>> LoadLocalization(string language, string category)
             {
                 var assembly = Assembly.GetExecutingAssembly();
-                var resourceName = $"MakuTweakerNew.loc.{language}.json";
 
-                using Stream stream = assembly.GetManifestResourceStream(resourceName);
+                Dictionary<string, Dictionary<string, string>> LoadRaw(string lang)
+                {
+                    var resourceName = $"MakuTweakerNew.loc.{lang}.json";
 
-                if (stream == null)
+                    using Stream stream = assembly.GetManifestResourceStream(resourceName);
+
+                    if (stream == null)
+                        throw new FileNotFoundException($"Cannot find embedded localization {resourceName}");
+
+                    using StreamReader reader = new StreamReader(stream);
+
+                    var localizationData =
+                        JsonConvert.DeserializeObject<
+                            Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>
+                        (reader.ReadToEnd());
+
+                    return localizationData["categories"][category];
+                }
+
+                var english = LoadRaw("en");
+
+                if (language == "en")
+                    return english;
+
+                try
+                {
+                    var current = LoadRaw(language);
+                    foreach (var section in english)
+                    {
+                        if (!current.ContainsKey(section.Key))
+                        {
+                            current[section.Key] = new Dictionary<string, string>(section.Value);
+                            continue;
+                        }
+
+                        foreach (var kv in section.Value)
+                        {
+                            if (!current[section.Key].ContainsKey(kv.Key))
+                            {
+                                current[section.Key][kv.Key] = kv.Value;
+                            }
+                        }
+                    }
+
+                    return current;
+                }
+                catch
                 {
                     Settings.Default.lang = "en";
-                    throw new FileNotFoundException($"Cannot find embedded localization {resourceName}.\nLanguage has been changed to English.");
+                    return english;
                 }
-
-                using StreamReader reader = new StreamReader(stream);
-                var jsonContent = reader.ReadToEnd();
-
-                var localizationData =
-                    JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<string, string>>>>>(jsonContent);
-
-                if (localizationData.ContainsKey("categories"))
-                {
-                    var categories = localizationData["categories"];
-
-                    if (categories.ContainsKey(category))
-                    {
-                        return categories[category];
-                    }
-                }
-
-                Settings.Default.lang = "en";
-                throw new KeyNotFoundException($"Cannot find category '{category}' in localization {resourceName}");
             }
-            
+
             public static List<TweakSuggestion> GetAllTweaksForSearch(string language)
             {
                 var tweaks = new List<TweakSuggestion>();
@@ -99,8 +127,6 @@ namespace MakuTweakerNew
 
                 var fullData = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(jsonContent);
                 var categoriesRoot = fullData["categories"];
-    
-                var catNames = categoriesRoot["base"]["catname"].ToObject<Dictionary<string, string>>();
 
                 var ignoredKeys = new HashSet<string>
                 {
@@ -112,7 +138,10 @@ namespace MakuTweakerNew
                     "makuos_tooltip", "infodone", "title", "title2", "os", "oned", "tenM",
                     "thirtyM", "oneH", "twoH", "fourH", "sixH", "suredialogT1", "suredialogT2",
                     "suredialogT3", "suredialogT4", "suredialogNS", "isnt", "is", "wu5b", "wu6b",
-                    "install", "reset", "enable", "e8b"
+                    "install", "reset", "enable", "e8b", "status_on", "status_off", "activated", "not_activated",
+                    "unknown", "not_supported", "present", "working", "status_off_or_not_found", "on_enforced", "on_audit",
+                    "on_not_working", "on_realtime", "coreisol", "uac_off_no_prompt", "uac_medium", "status", "statusdis",
+                    "loading", "save_done", "freespace", "capac", "build", "siteban", "makutnah", "sitebandone", "other"
                 };
 
                 foreach (var category in categoriesRoot)
@@ -122,9 +151,7 @@ namespace MakuTweakerNew
                     if (category.Value["main"]["label"] == null) continue;
 
                     string internalTag = category.Name;
-                    string displayCategoryName = catNames.ContainsKey(internalTag) 
-                        ? catNames[internalTag] 
-                        : internalTag;
+                    string displayCategoryName = category.Value["main"]["label"].ToString();
 
                     if (category.Value["main"] != null)
                     {
@@ -143,9 +170,9 @@ namespace MakuTweakerNew
                                 continue;
 
                             string displayValue = tweak.Value.ToString();
-    
+
                             if (displayValue.Length > 90) continue;
-    
+
                             tweaks.Add(new TweakSuggestion
                             {
                                 Id = key,
@@ -161,9 +188,7 @@ namespace MakuTweakerNew
                 {
                     if (categoriesRoot["myan"] != null && categoriesRoot["myan"]["main"] != null && categoriesRoot["myan"]["main"]["excltitle"] != null)
                     {
-                        string displayCategoryName = catNames.ContainsKey("procmgr")
-                            ? catNames["procmgr"]
-                            : "ProcessMGR";
+                        string displayCategoryName = categoriesRoot["pmgr"]?["main"]?["label"]?.ToString() ?? "ProcessMGR";
 
                         tweaks.Add(new TweakSuggestion
                         {
@@ -179,17 +204,17 @@ namespace MakuTweakerNew
                 return tweaks;
             }
         }
-        
+
         public class TweakSuggestion
         {
             public string Id { get; set; }
             public string DisplayName { get; set; }
             public string CategoryKey { get; set; }
             public string InternalCategoryTag { get; set; }
-    
+
             public override string ToString() => DisplayName;
         }
-        
+
         private List<TweakSuggestion> _searchLibrary = new List<TweakSuggestion>();
 
         private void InitializeSearch()
@@ -202,6 +227,13 @@ namespace MakuTweakerNew
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
                 var query = sender.Text.ToLower();
+                if (MainFrame.Content is ProcessMGR pmgr)
+                {
+                    pmgr.FilterProcesses(query);
+                    sender.ItemsSource = null;
+                    return;
+                }
+
                 if (string.IsNullOrWhiteSpace(query))
                 {
                     sender.ItemsSource = null;
@@ -212,7 +244,26 @@ namespace MakuTweakerNew
                     .Where(t => t.DisplayName.ToLower().Contains(query))
                     .Take(10)
                     .ToList();
+
+                var easterEggs = new Dictionary<string, string>
+                {
+                    { "yuzuru", "https://www.youtube.com/watch?v=Dnpyg6xOS2g&list=PLnz2Wc_QvOg8byWCAFy6uXkgOZuZwtv2P&index=1" },
+                    { "gabriel rondo", "https://youtu.be/OXHOgIkO89I?si=CLqJUd0JCMFuQaKY&t=47" },
+                    { "yona", "https://youtu.be/KyuSarQvt5U?si=g01af6NXKxQ6B2gR" },
+                    { "ahih", "https://www.youtube.com/watch?v=IKZbwuwXTNY&list=PLnz2Wc_QvOg8byWCAFy6uXkgOZuZwtv2P&index=5&t=40" },
+                    { "kurumi", "https://youtu.be/-DGBxD801jI?si=vPvodZ9gMoOg_aYA" }
+                };
+
+                string input = sender.Text.ToLower().Trim();
+                if (easterEggs.ContainsKey(input))
+                {
+                    Process.Start(new ProcessStartInfo(easterEggs[input]) { UseShellExecute = true });
+                    sender.Text = string.Empty;
+                    sender.IsSuggestionListOpen = false;
+                    return;
+                }
             }
+
         }
 
         private void AutoSuggestBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
@@ -273,7 +324,7 @@ namespace MakuTweakerNew
             if (checkWinVer() < 14393)
             {
                 System.Windows.Forms.DialogResult old = System.Windows.Forms.MessageBox.Show("Your version of Windows is not supported. To use MakuTweaker, update your system to Windows 10 1607 or higher. Do you want to download MakuTweaker Legacy Windows Edition?\n\nВаша версия Windows неподдерживается. Для использования MakuTweaker, обновитесь до Windows 10 1607 или выше. Вы хотите скачать MakuTweaker для старых Windows?", "MakuTweaker", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Error);
-                if(old == System.Windows.Forms.DialogResult.Yes)
+                if (old == System.Windows.Forms.DialogResult.Yes)
                 {
                     Process.Start(new ProcessStartInfo("https://adderly.top/mt") { UseShellExecute = true });
                 }
@@ -299,22 +350,20 @@ namespace MakuTweakerNew
                 if (Properties.Settings.Default.ExclusiveWindowLeft != -10000)
                 {
                     this.WindowStartupLocation = WindowStartupLocation.Manual;
-                    this.Width = Properties.Settings.Default.ExclusiveWindowWidth >= 580 ? Properties.Settings.Default.ExclusiveWindowWidth : 1062;
-                    this.Height = Properties.Settings.Default.ExclusiveWindowHeight >= 380 ? Properties.Settings.Default.ExclusiveWindowHeight : 675;
+                    this.Width = Properties.Settings.Default.ExclusiveWindowWidth >= 580 ? Properties.Settings.Default.ExclusiveWindowWidth : 1150;
+                    this.Height = Properties.Settings.Default.ExclusiveWindowHeight >= 380 ? Properties.Settings.Default.ExclusiveWindowHeight : 710;
                     this.Left = Properties.Settings.Default.ExclusiveWindowLeft;
                     this.Top = Properties.Settings.Default.ExclusiveWindowTop;
                 }
                 else
                 {
-                    this.Width = 1062;
-                    this.Height = 675;
+                    this.Width = 1150;
+                    this.Height = 710;
                     this.WindowStartupLocation = WindowStartupLocation.CenterScreen;
                 }
 
                 NavigationView_Root.OpenPaneLength = 0;
                 NavigationView_Root.IsPaneVisible = false;
-                SearchBox.Opacity = 0;
-                SearchBox.Visibility = Visibility.Collapsed;
             }
 
             ExpTimer();
@@ -420,6 +469,7 @@ namespace MakuTweakerNew
                     "sat" => typeof(SAT),
                     "pmgr" => typeof(ProcessMGR),
                     "pci" => typeof(PCI),
+                    "wininfo" => typeof(WinInfo),
                     _ => null
                 };
 
@@ -482,6 +532,9 @@ namespace MakuTweakerNew
                     case "pc":
                         lastTag = "pci";
                         break;
+                    case "win":
+                        lastTag = "wininfo";
+                        break;
                 }
             }
 
@@ -491,33 +544,18 @@ namespace MakuTweakerNew
                 lastTag = "pmgr";
                 NavigationView_Root.OpenPaneLength = 0;
                 NavigationView_Root.IsPaneVisible = false;
-                SearchBox.Opacity = 0;
-                SearchBox.Visibility = Visibility.Collapsed;
             }
 
-            if (IsWindowsActivated())
-            {
-                c9.Visibility = Visibility.Collapsed;
-                if (lastTag == "act")
-                {
-                    lastTag = "exp";
-                }
-            }
+            UpdateTabsVisibility();
 
-            var checkQs = new QuickSet();
-            if (checkQs.VisibleTweaksCount < 5)
+            if (!Properties.Settings.Default.showhiddentabs)
             {
-                c6.Visibility = Visibility.Collapsed;
-                if (lastTag == "quick")
-                {
-                    lastTag = "exp";
-                }
-            }
+                if (IsWindowsActivated() && lastTag == "act") lastTag = "exp";
 
-            if (Properties.Settings.Default.UwpHidden)
-            {
-                c5.Visibility = Visibility.Collapsed;
-                if (lastTag == "uwp") lastTag = "exp";
+                var checkQs = new QuickSet();
+                if (checkQs.VisibleTweaksCount < 5 && lastTag == "quick") lastTag = "exp";
+
+                if (Properties.Settings.Default.UwpHidden && lastTag == "uwp") lastTag = "exp";
             }
 
             if (!string.IsNullOrEmpty(lastTag))
@@ -546,30 +584,48 @@ namespace MakuTweakerNew
             UpdateMainWindowResponsiveUI(this.ActualWidth);
         }
 
-        private bool IsWindowsActivated()
+        public void UpdateTabsVisibility()
         {
-            try
-            {
-                ManagementScope scope = new ManagementScope(@"\\" + Environment.MachineName + @"\root\cimv2");
-                scope.Connect();
-                SelectQuery searchQuery = new SelectQuery("SELECT LicenseStatus FROM SoftwareLicensingProduct WHERE ApplicationID = '55c92734-d682-4d71-983e-d6ec3f16059f' AND PartialProductKey IS NOT NULL");
+            bool showHiddenTabs = Properties.Settings.Default.showhiddentabs;
 
-                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(scope, searchQuery))
+            if (showHiddenTabs)
+            {
+                c9.Visibility = Visibility.Visible;
+                c6.Visibility = Visibility.Visible;
+                c5.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                if (IsWindowsActivated())
                 {
-                    foreach (ManagementObject obj in searcher.Get())
-                    {
-                        if (Convert.ToInt32(obj["LicenseStatus"]) == 1)
-                        {
-                            return true;
-                        }
-                    }
+                    c9.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    c9.Visibility = Visibility.Visible;
+                }
+
+                var checkQs = new QuickSet();
+                if (checkQs.VisibleTweaksCount < 5)
+                {
+                    c6.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    c6.Visibility = Visibility.Visible;
+                }
+
+                if (Properties.Settings.Default.UwpHidden)
+                {
+                    c5.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    c5.Visibility = Visibility.Visible;
                 }
             }
-            catch
-            {
-            }
-            return false;
         }
+
         private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             UpdateMainWindowResponsiveUI(e.NewSize.Width);
@@ -603,26 +659,43 @@ namespace MakuTweakerNew
             {
                 var languageCode = Properties.Settings.Default.lang ?? "en";
                 var basel = Localization.LoadLocalization(languageCode, "base");
-                c1.Content = basel["catname"]["expl"];
-                c2.Content = basel["catname"]["wu"];
-                c3.Content = basel["catname"]["sr"];
-                c4.Content = basel["catname"]["per"];
-                c5.Content = basel["catname"]["uwp"];
-                c6.Content = basel["catname"]["quick"];
-                c7.Content = basel["catname"]["adv"];
-                c8.Content = basel["catname"]["compon"];
-                c9.Content = basel["catname"]["act"];
-                c10.Content = basel["catname"]["perf"];
-                c11.Content = basel["catname"]["sat"];
-                c12.Content = basel["catname"]["procmgr"];
-                c13.Content = basel["catname"]["pci"];
+                string GetLabel(string category) =>
+                    Localization.LoadLocalization(languageCode, category)?["main"]?["label"] ?? "N/A";
+
+                c1.Content = GetLabel("expl");
+                c2.Content = GetLabel("wu");
+                c3.Content = GetLabel("sr");
+                c4.Content = GetLabel("per");
+                c5.Content = GetLabel("uwp");
+                c6.Content = GetLabel("quick");
+                c7.Content = GetLabel("adv");
+                c8.Content = GetLabel("compon");
+                c9.Content = GetLabel("act");
+                c10.Content = GetLabel("perfor");
+                c11.Content = GetLabel("sat");
+                c12.Content = GetLabel("pmgr");
+                c13.Content = GetLabel("wininfo");
+                c14.Content = GetLabel("pci");
+
                 rexplorerText.Text = basel["lowtabs"]["rexp"];
                 settingsText.Text = basel["lowtabs"]["set"];
-                SearchBox.PlaceholderText = basel["def"]["search"];
+
+                if (MainFrame.Content is ProcessMGR)
+                {
+                    var pmgrLoc = Localization.LoadLocalization(languageCode, "pmgr");
+                    SearchBox.PlaceholderText = pmgrLoc.ContainsKey("main") && pmgrLoc["main"].ContainsKey("search")
+                        ? pmgrLoc["main"]["search"]
+                        : "Search";
+                }
+                else
+                {
+                    SearchBox.PlaceholderText = basel["def"]["search"];
+                }
+
                 InitializeSearch();
                 SearchBox.Text = string.Empty;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 iNKORE.UI.WPF.Modern.Controls.MessageBox.Show(ex.Message, "MakuTweaker Error", MessageBoxButton.OK, MessageBoxImage.Stop);
                 System.Windows.Forms.Application.Restart();
@@ -697,14 +770,35 @@ namespace MakuTweakerNew
                 settingsButton.IsEnabled = true;
             }
 
+            var languageCode = Properties.Settings.Default.lang ?? "en";
+
             if (e.Content is ProcessMGR pmgr)
             {
                 UpdateSettingsButtonForExclusive(true, pmgr.IsExclusiveMode);
+
+                try
+                {
+                    var pmgrLoc = Localization.LoadLocalization(languageCode, "pmgr");
+                    SearchBox.PlaceholderText = pmgrLoc["main"]["search"];
+                }
+                catch { }
             }
             else
             {
                 UpdateSettingsButtonForExclusive(false, false);
+
+                try
+                {
+                    var basel = Localization.LoadLocalization(languageCode, "base");
+                    SearchBox.PlaceholderText = basel["def"]["search"];
+                }
+                catch { }
             }
+
+            SearchBox.Text = string.Empty;
+            SearchBox.BeginAnimation(UIElement.OpacityProperty, null);
+            SearchBox.Opacity = 1;
+            SearchBox.Visibility = Visibility.Visible;
         }
 
         public void expk()
@@ -889,12 +983,7 @@ namespace MakuTweakerNew
             if (!animate)
             {
                 NavigationView_Root.BeginAnimation(iNKORE.UI.WPF.Modern.Controls.NavigationView.OpenPaneLengthProperty, null);
-                SearchBox.BeginAnimation(UIElement.OpacityProperty, null);
-
                 NavigationView_Root.OpenPaneLength = isExclusive ? 0 : 290;
-                SearchBox.Opacity = isExclusive ? 0 : 1;
-                SearchBox.IsHitTestVisible = !isExclusive;
-                SearchBox.Visibility = isExclusive ? Visibility.Collapsed : Visibility.Visible;
                 NavigationView_Root.IsPaneVisible = !isExclusive;
                 return;
             }
@@ -916,14 +1005,36 @@ namespace MakuTweakerNew
                 EasingFunction = ease
             };
 
-            SearchBox.IsHitTestVisible = !isExclusive;
             if (!isExclusive)
             {
                 NavigationView_Root.IsPaneVisible = true;
-                SearchBox.Visibility = Visibility.Visible;
             }
             NavigationView_Root.BeginAnimation(iNKORE.UI.WPF.Modern.Controls.NavigationView.OpenPaneLengthProperty, paneAnimation);
-            SearchBox.BeginAnimation(UIElement.OpacityProperty, searchAnimation);
+        }
+
+        private bool IsWindowsActivated()
+        {
+            try
+            {
+                ManagementScope scope = new ManagementScope(@"\\" + Environment.MachineName + @"\root\cimv2");
+                scope.Connect();
+                SelectQuery searchQuery = new SelectQuery("SELECT LicenseStatus FROM SoftwareLicensingProduct WHERE ApplicationID = '55c92734-d682-4d71-983e-d6ec3f16059f' AND PartialProductKey IS NOT NULL");
+
+                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(scope, searchQuery))
+                {
+                    foreach (ManagementObject obj in searcher.Get())
+                    {
+                        if (Convert.ToInt32(obj["LicenseStatus"]) == 1)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+            }
+            return false;
         }
     }
 }

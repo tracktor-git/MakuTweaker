@@ -15,7 +15,7 @@
                 <TextBlock x:Name="label" HorizontalAlignment="Left" Margin="24,11,0,0" TextWrapping="Wrap" Text="System and Recovery" VerticalAlignment="Top" FontSize="32" FontFamily="Segoe UI Semibold"/>
 
                 <StackPanel Orientation="Horizontal" Margin="24,10,0,0">
-                    <TextBlock x:Name="sfclabel" Text="Repair System Using SFC" FontSize="16" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="sfclabel" Text="Repair System Using SFC" FontSize="18" VerticalAlignment="Center"/>
                     <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                         <controls:Button.ToolTip>
                             <ToolTip MaxWidth="500" x:Name="sys_tooltip_sfc"/>
@@ -31,7 +31,7 @@
                 </Grid>
 
                 <StackPanel Orientation="Horizontal" Margin="24,10,0,0">
-                    <TextBlock x:Name="dismlabel" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Repair System Using DISM" VerticalAlignment="Center" FontSize="16"/>
+                    <TextBlock x:Name="dismlabel" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Repair System Using DISM" VerticalAlignment="Center" FontSize="18"/>
                     <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                         <controls:Button.ToolTip>
                             <ToolTip MaxWidth="500" x:Name="sys_tooltip_dism"/>
@@ -46,16 +46,64 @@
                     <controls:Button x:Name="dism" Padding="20,5" Content="Repair" Height="28" Click="dism_Click"/>
                 </Grid>
 
-                <TextBlock x:Name="templabel" HorizontalAlignment="Left" Margin="24,10,0,0" TextWrapping="Wrap" Text="Clean TEMP Folder" VerticalAlignment="Top" FontSize="16"/>
+                <StackPanel x:Name="tempFullPanel" Visibility="Visible">
+                    <StackPanel Orientation="Horizontal" Margin="24,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <TextBlock x:Name="templabel" TextWrapping="Wrap" Text="Clean TEMP Folder" FontSize="18"/>
+                        <ui:ProgressRing x:Name="tempSizeRing" IsActive="True" Width="16" Height="16" Margin="10,0,0,0" Visibility="Visible" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="tempSizeText" FontSize="18" Visibility="Collapsed" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Grid HorizontalAlignment="Left" Margin="24,5,0,0" VerticalAlignment="Top">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SysRecButtons"/>
+                        </Grid.ColumnDefinitions>
+                        <controls:Button x:Name="temp" Padding="20,5" Content="Clean" Height="28" Click="temp_Click"/>
+                    </Grid>
+                </StackPanel>
 
-                <Grid HorizontalAlignment="Left" Margin="24,5,0,0" VerticalAlignment="Top">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" SharedSizeGroup="SysRecButtons"/>
-                    </Grid.ColumnDefinitions>
-                    <controls:Button x:Name="temp" Padding="20,5" Content="Clean" Height="28" Click="temp_Click"/>
-                </Grid>
+                <StackPanel x:Name="pipFullPanel" Visibility="Visible">
+                    <StackPanel Orientation="Horizontal" Margin="24,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <TextBlock x:Name="piplabel" TextWrapping="Wrap" Text="Clean pip Folder" FontSize="18"/>
+                        <ui:ProgressRing x:Name="pipSizeRing" IsActive="True" Width="16" Height="16" Margin="10,0,0,0" Visibility="Visible" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="pipSizeText" FontSize="18" Visibility="Collapsed" VerticalAlignment="Center"/>
+                    </StackPanel>
 
-                <TextBlock x:Name="batterylabel" HorizontalAlignment="Left" Margin="24,10,0,0" TextWrapping="Wrap" Text="Make a Report of The Battery Characteristics" VerticalAlignment="Top" FontSize="16"/>
+                    <Grid HorizontalAlignment="Left" Margin="24,5,0,0" VerticalAlignment="Top">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SysRecButtons"/>
+                        </Grid.ColumnDefinitions>
+                        <controls:Button x:Name="pipcache" Padding="20,5" Content="Clean" Height="28" Click="pipcache_Click"/>
+                    </Grid>
+                </StackPanel>
+
+                <StackPanel x:Name="recyclebinFullPanel" Visibility="Visible">
+                    <StackPanel Orientation="Horizontal" Margin="24,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <TextBlock x:Name="recyclebinlabel" TextWrapping="Wrap" Text="Empty Recycle Bin" FontSize="18"/>
+                        <ui:ProgressRing x:Name="recyclebinSizeRing" IsActive="True" Width="16" Height="16" Margin="10,0,0,0" Visibility="Visible" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="recyclebinSizeText" FontSize="18" Visibility="Collapsed" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Grid HorizontalAlignment="Left" Margin="24,5,0,0" VerticalAlignment="Top">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SysRecButtons"/>
+                        </Grid.ColumnDefinitions>
+                        <controls:Button x:Name="recyclebin" Padding="20,5" Content="Clean" Height="28" Click="recyclebin_Click"/>
+                    </Grid>
+                </StackPanel>
+
+                <StackPanel x:Name="thumbcacheFullPanel" Visibility="Visible">
+                    <StackPanel Orientation="Horizontal" Margin="24,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <TextBlock x:Name="thumbcachelabel" TextWrapping="Wrap" Text="Clean Thumbnail Cache" FontSize="18"/>
+                        <ui:ProgressRing x:Name="thumbcacheSizeRing" IsActive="True" Width="16" Height="16" Margin="10,0,0,0" Visibility="Visible" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="thumbcacheSizeText" FontSize="18" Visibility="Collapsed" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Grid HorizontalAlignment="Left" Margin="24,5,0,0" VerticalAlignment="Top">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="SysRecButtons"/>
+                        </Grid.ColumnDefinitions>
+                        <controls:Button x:Name="thumbcache" Padding="20,5" Content="Clean" Height="28" Click="thumbcache_Click"/>
+                    </Grid>
+                </StackPanel>
+
+                <TextBlock x:Name="batterylabel" HorizontalAlignment="Left" Margin="24,10,0,0" TextWrapping="Wrap" Text="Make a Report of The Battery Characteristics" VerticalAlignment="Top" FontSize="18"/>
 
                 <Grid HorizontalAlignment="Left" Margin="24,5,0,0" VerticalAlignment="Top">
                     <Grid.ColumnDefinitions>
@@ -66,14 +114,14 @@
 
                 <StackPanel Margin="24,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=sticky}" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Header, ElementName=sticky}" FontSize="18" VerticalAlignment="Center"/>
                         <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                             <controls:Button.ToolTip>
                                 <ToolTip MaxWidth="500" x:Name="sys_tooltip_sticky"/>
                             </controls:Button.ToolTip>
                         </controls:Button>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="sticky" FontSize="16" Header="Disable Sticky Keys" Toggled="sticky_Toggled">
+                    <ui:ToggleSwitch x:Name="sticky" FontSize="18" Header="Disable Sticky Keys" Toggled="sticky_Toggled">
                         <ui:ToggleSwitch.HeaderTemplate>
                             <DataTemplate />
                         </ui:ToggleSwitch.HeaderTemplate>
@@ -82,14 +130,14 @@
 
                 <StackPanel Margin="24,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=coreisol}" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Header, ElementName=coreisol}" FontSize="18" VerticalAlignment="Center"/>
                         <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                             <controls:Button.ToolTip>
                                 <ToolTip MaxWidth="500" x:Name="sys_tooltip_coreisol"/>
                             </controls:Button.ToolTip>
                         </controls:Button>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="coreisol" FontSize="16" Header="Disable Core Isolation / Memory Integrity" Toggled="coreisol_Toggled">
+                    <ui:ToggleSwitch x:Name="coreisol" FontSize="18" Header="Disable Core Isolation / Memory Integrity" Toggled="coreisol_Toggled">
                         <ui:ToggleSwitch.HeaderTemplate>
                             <DataTemplate />
                         </ui:ToggleSwitch.HeaderTemplate>
@@ -98,14 +146,14 @@
 
                 <StackPanel Margin="24,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=uac}" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Header, ElementName=uac}" FontSize="18" VerticalAlignment="Center"/>
                         <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                             <controls:Button.ToolTip>
                                 <ToolTip MaxWidth="500" x:Name="sys_tooltip_uac"/>
                             </controls:Button.ToolTip>
                         </controls:Button>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="uac" FontSize="16" Header="Disable User Account Control" Toggled="uac_Toggled">
+                    <ui:ToggleSwitch x:Name="uac" FontSize="18" Header="Disable User Account Control" Toggled="uac_Toggled">
                         <ui:ToggleSwitch.HeaderTemplate>
                             <DataTemplate />
                         </ui:ToggleSwitch.HeaderTemplate>
@@ -114,32 +162,30 @@
 
                 <StackPanel Margin="24,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=smartscreen}" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Header, ElementName=smartscreen}" FontSize="18" VerticalAlignment="Center"/>
                         <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                             <controls:Button.ToolTip>
                                 <ToolTip MaxWidth="500" x:Name="sys_tooltip_smartscreen"/>
                             </controls:Button.ToolTip>
                         </controls:Button>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="smartscreen" FontSize="16" Header="Disable SmartScreen" Toggled="smartscreen_Toggled">
+                    <ui:ToggleSwitch x:Name="smartscreen" FontSize="18" Header="Disable SmartScreen" Toggled="smartscreen_Toggled">
                         <ui:ToggleSwitch.HeaderTemplate>
                             <DataTemplate />
                         </ui:ToggleSwitch.HeaderTemplate>
                     </ui:ToggleSwitch>
                 </StackPanel>
 
-                <ui:ToggleSwitch x:Name="sleeptimeout" Header="Disable Sleep Timeout" FontSize="16" Toggled="sleeptimeout_Toggled" VerticalAlignment="Top" Margin="24,10,0,0"/>
-
                 <StackPanel Margin="24,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=bing}" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Header, ElementName=bing}" FontSize="18" VerticalAlignment="Center"/>
                         <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                             <controls:Button.ToolTip>
                                 <ToolTip MaxWidth="500" x:Name="sys_tooltip_bing"/>
                             </controls:Button.ToolTip>
                         </controls:Button>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="bing" FontSize="16" Header="Disable Online Search in Start Menu via Bing" Toggled="bing_Toggled">
+                    <ui:ToggleSwitch x:Name="bing" FontSize="18" Header="Disable Online Search in Start Menu via Bing" Toggled="bing_Toggled">
                         <ui:ToggleSwitch.HeaderTemplate>
                             <DataTemplate />
                         </ui:ToggleSwitch.HeaderTemplate>
@@ -148,14 +194,14 @@
 
                 <StackPanel Margin="24,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=chkdsk}" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Header, ElementName=chkdsk}" FontSize="18" VerticalAlignment="Center"/>
                         <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                             <controls:Button.ToolTip>
                                 <ToolTip MaxWidth="500" x:Name="sys_tooltip_chkdsk"/>
                             </controls:Button.ToolTip>
                         </controls:Button>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="chkdsk" FontSize="16" Header="Set Chkdsk Timeout to 1 Minute" Toggled="chkdsk_Toggled">
+                    <ui:ToggleSwitch x:Name="chkdsk" FontSize="18" Header="Set Chkdsk Timeout to 1 Minute" Toggled="chkdsk_Toggled">
                         <ui:ToggleSwitch.HeaderTemplate>
                             <DataTemplate />
                         </ui:ToggleSwitch.HeaderTemplate>
@@ -164,32 +210,32 @@
 
                 <StackPanel Margin="24,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=bitlocker}" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Header, ElementName=bitlocker}" FontSize="18" VerticalAlignment="Center"/>
                         <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                             <controls:Button.ToolTip>
                                 <ToolTip MaxWidth="500" x:Name="sys_tooltip_bitlocker"/>
                             </controls:Button.ToolTip>
                         </controls:Button>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="bitlocker" FontSize="16" Header="Disable BitLocker Automatic Encryption" Toggled="bitlocker_Toggled">
+                    <ui:ToggleSwitch x:Name="bitlocker" FontSize="18" Header="Disable BitLocker Automatic Encryption" Toggled="bitlocker_Toggled">
                         <ui:ToggleSwitch.HeaderTemplate>
                             <DataTemplate />
                         </ui:ToggleSwitch.HeaderTemplate>
                     </ui:ToggleSwitch>
                 </StackPanel>
 
-                <ui:ToggleSwitch x:Name="telemetry" Header="Disable All Telemetry" Margin="24,10,0,0" VerticalAlignment="Top" FontSize="16" Toggled="telemetry_Toggled"/>
+                <ui:ToggleSwitch x:Name="telemetry" Header="Disable All Telemetry" Margin="24,10,0,0" VerticalAlignment="Top" FontSize="18" Toggled="telemetry_Toggled"/>
 
                 <StackPanel Margin="24,10,0,0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Header, ElementName=hybern}" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Header, ElementName=hybern}" FontSize="18" VerticalAlignment="Center"/>
                         <controls:Button Content="?" Width="18" Height="18" Margin="8,0,0,0" FontSize="12" Padding="0" VerticalAlignment="Center" ToolTipService.InitialShowDelay="100">
                             <controls:Button.ToolTip>
                                 <ToolTip MaxWidth="500" x:Name="sys_tooltip_hyber"/>
                             </controls:Button.ToolTip>
                         </controls:Button>
                     </StackPanel>
-                    <ui:ToggleSwitch x:Name="hybern" FontSize="16" Header="Disable Hibernation" Toggled="hybern_Toggled" Margin="0,0,0,15">
+                    <ui:ToggleSwitch x:Name="hybern" FontSize="18" Header="Disable Hibernation" Toggled="hybern_Toggled" Margin="0,0,0,15">
                         <ui:ToggleSwitch.HeaderTemplate>
                             <DataTemplate />
                         </ui:ToggleSwitch.HeaderTemplate>
@@ -197,5 +243,11 @@
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
+
+        <StackPanel x:Name="loadingPanel" Margin="0,30,0,30" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0" Visibility="Collapsed">
+            <ui:ProgressRing x:Name="ring" IsActive="False" Width="60" Height="60" HorizontalAlignment="Center" Visibility="Collapsed"/>
+            <ui:ProgressBar x:Name="pbCache" Visibility="Collapsed" Minimum="0" Maximum="100" Value="0" HorizontalAlignment="Center"/>
+            <TextBlock x:Name="t" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Очистка..." FontSize="14" FontFamily="Segoe UI" Margin="0,12,0,0"/>
+        </StackPanel>
     </Grid>
 </Page>

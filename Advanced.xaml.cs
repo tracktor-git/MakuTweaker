@@ -68,14 +68,17 @@ namespace MakuTweakerNew
         {
             var languageCode = Properties.Settings.Default.lang ?? "en";
             var adv = MainWindow.Localization.LoadLocalization(languageCode, "adv");
+            var myan = MainWindow.Localization.LoadLocalization(languageCode, "myan");
             var main = MainWindow.Localization.LoadLocalization(languageCode, "base");
             var compon = MainWindow.Localization.LoadLocalization(languageCode, "compon");
             var tooltips = MainWindow.Localization.LoadLocalization(languageCode, "tooltips");
 
-            label.Text = main["catname"]["adv"];
-
+            label.Text = adv["main"]["label"];
             edgelabel.Text = adv["main"]["deledge_title"];
             edgeBtn.Content = adv["main"]["deledge_btn"];
+
+            sitebanlabel.Text = adv["main"]["sitebantitle"];
+            siteBan.Content = adv["main"]["sitebanopen"];
 
             disindex.Header = adv["main"]["index_title"];
             oldbootloader.Header = adv["main"]["oldbootloader"];
@@ -91,6 +94,7 @@ namespace MakuTweakerNew
             sys_tooltip_ttl.Content = tooltips["main"]["ttl"];
             edge_tooltip.Content = adv["main"]["deledge_tooltip"];
             index_tooltip.Content = adv["main"]["index_tooltip"];
+            siteban_tooltip.Content = myan["main"]["siteban"];
 
             foreach (var toggle in AllToggles)
             {
@@ -146,31 +150,22 @@ namespace MakuTweakerNew
             }
         }
 
-        private void vbs_Toggled(object sender, RoutedEventArgs e)
+private void vbs_Toggled(object sender, RoutedEventArgs e)
         {
             if (isLoaded)
             {
-                switch (vbs.IsOn)
-                {
-                    case true:
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard").SetValue("EnableVirtualizationBasedSecurity", 0, RegistryValueKind.DWord);
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard").SetValue("RequirePlatformSecurityFeatures", 0, RegistryValueKind.DWord);
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\Lsa").SetValue("LsaCfgFlags", 0, RegistryValueKind.DWord);
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity").SetValue("Enabled", 0, RegistryValueKind.DWord);
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard").SetValue("RequireMicrosoftSignedBootChain", 0, RegistryValueKind.DWord);
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard").SetValue("KernelDMAProtection", 0, RegistryValueKind.DWord);
-                        Process.Start("cmd.exe", "/c bcdedit /set hypervisorlaunchtype off");
-                        break;
-                    case false:
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard").SetValue("EnableVirtualizationBasedSecurity", 1, RegistryValueKind.DWord);
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard").SetValue("RequirePlatformSecurityFeatures", 3, RegistryValueKind.DWord);
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\Lsa").SetValue("LsaCfgFlags", 1, RegistryValueKind.DWord);
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity").SetValue("Enabled", 1, RegistryValueKind.DWord);
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard").SetValue("RequireMicrosoftSignedBootChain", 1, RegistryValueKind.DWord);
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard").SetValue("KernelDMAProtection", 1, RegistryValueKind.DWord);
-                        Process.Start("cmd.exe", "/c bcdedit /set hypervisorlaunchtype auto");
-                        break;
-                }
+                using var devGuardKey = Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard");
+                devGuardKey.SetValue("EnableVirtualizationBasedSecurity", vbs.IsOn ? 0 : 1, RegistryValueKind.DWord);
+                devGuardKey.SetValue("RequirePlatformSecurityFeatures", vbs.IsOn ? 0 : 3, RegistryValueKind.DWord);
+                devGuardKey.SetValue("RequireMicrosoftSignedBootChain", vbs.IsOn ? 0 : 1, RegistryValueKind.DWord);
+                devGuardKey.SetValue("KernelDMAProtection", vbs.IsOn ? 0 : 1, RegistryValueKind.DWord);
+
+                Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\Lsa")
+                    .SetValue("LsaCfgFlags", vbs.IsOn ? 0 : 1, RegistryValueKind.DWord);
+                Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity")
+                    .SetValue("Enabled", vbs.IsOn ? 0 : 1, RegistryValueKind.DWord);
+
+                Process.Start("cmd.exe", $"/c bcdedit /set hypervisorlaunchtype {(vbs.IsOn ? "off" : "auto")}");
                 mw.RebootNotify(1);
             }
         }
@@ -179,15 +174,7 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (oldbootloader.IsOn)
-                {
-                    case true:
-                        Process.Start("cmd.exe", "/c \"bcdedit /set \"{current}\" bootmenupolicy legacy\"");
-                        break;
-                    case false:
-                        Process.Start("cmd.exe", "/c \"bcdedit /set \"{current}\" bootmenupolicy standard\"");
-                        break;
-                }
+                Process.Start("cmd.exe", "/c \"bcdedit /set \"{current}\" bootmenupolicy " + (oldbootloader.IsOn ? "legacy" : "standard") + "\"");
             }
         }
 
@@ -195,30 +182,16 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (advancedboot.IsOn)
-                {
-                    case true:
-                        Process.Start("cmd.exe", "/c \"bcdedit /set \"{globalsettings}\" advancedoptions true\"");
-                        break;
-                    case false:
-                        Process.Start("cmd.exe", "/c \"bcdedit /set \"{globalsettings}\" advancedoptions false\"");
-                        break;
-                }
+                Process.Start("cmd.exe", "/c \"bcdedit /set \"{globalsettings}\" advancedoptions " + (advancedboot.IsOn ? "true" : "false") + "\"");
             }
         }
+
         private void swap_Toggled(object sender, RoutedEventArgs e)
         {
             if (isLoaded)
             {
-                switch (swap.IsOn)
-                {
-                    case true:
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management").SetValue("PagingFiles", new string[] { }, RegistryValueKind.MultiString);
-                        break;
-                    case false:
-                        Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management").SetValue("PagingFiles", new string[] { @"?:\pagefile.sys" }, RegistryValueKind.MultiString);
-                        break;
-                }
+                Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management")
+                    .SetValue("PagingFiles", swap.IsOn ? Array.Empty<string>() : new string[] { @"?:\pagefile.sys" }, RegistryValueKind.MultiString);
                 mw.RebootNotify(1);
             }
         }
@@ -250,6 +223,7 @@ namespace MakuTweakerNew
                 MessageBoxImage.Warning);
 
             if (resultSure != MessageBoxResult.Yes) return;
+
             try
             {
                 string[] processes = { "msedge", "msedgewebview2", "MicrosoftEdgeUpdate" };
@@ -354,39 +328,32 @@ namespace MakuTweakerNew
 
         private void disindex_Toggled(object sender, RoutedEventArgs e)
         {
-            if (!isLoaded) return;
-            try
+            if (isLoaded)
             {
-                Registry.LocalMachine.CreateSubKey(
-                    @"SYSTEM\CurrentControlSet\Services\WSearch")
-                    .SetValue("Start", disindex.IsOn ? 4 : 2, RegistryValueKind.DWord);
-
-                if (disindex.IsOn)
+                try
                 {
+                    Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Services\WSearch")
+                        .SetValue("Start", disindex.IsOn ? 4 : 2, RegistryValueKind.DWord);
+
                     Process.Start(new ProcessStartInfo
                     {
                         FileName = "cmd.exe",
-                        Arguments = "/c sc stop WSearch",
+                        Arguments = $"/c sc {(disindex.IsOn ? "stop" : "start")} WSearch",
                         CreateNoWindow = true,
                         UseShellExecute = false
                     });
-                }
-                else
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "cmd.exe",
-                        Arguments = "/c sc start WSearch",
-                        CreateNoWindow = true,
-                        UseShellExecute = false
-                    });
-                }
 
-                mw.RebootNotify(1);
+                    mw.RebootNotify(1);
+                }
+                catch { }
             }
-            catch
-            {
-            }
+        }
+
+        private void siteBan_Click(object sender, RoutedEventArgs e)
+        {
+            SiteBan siteban = new SiteBan();
+            siteban.Owner = Application.Current.MainWindow;
+            siteban.ShowDialog();
         }
     }
 }

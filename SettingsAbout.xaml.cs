@@ -15,6 +15,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Net.Http;
 
 namespace MakuTweakerNew
 {
@@ -23,51 +24,43 @@ namespace MakuTweakerNew
         private const string AppPathsRoot = @"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths";
         private readonly string[] _aliases = { "makut.exe", "maku.exe", "mt.exe" };
         private MainWindow mw = (MainWindow)System.Windows.Application.Current.MainWindow;
+
+        private static readonly HttpClient _httpClient = new HttpClient();
+        private static MediaPlayer _easterEggPlayer = new MediaPlayer();
+        private static System.Windows.Threading.DispatcherTimer _easterTimer;
+        private static bool _isMusicPlaying = false;
+        private static ProgressBar _currentProgressBar;
+        private static string _currentMusicName = string.Empty;
+
         bool isLoaded = false;
 
         public SettingsAbout()
         {
             InitializeComponent();
-            WinRAliasCheck.IsChecked = CheckWinRAliasStatus();
+            if (MainWindow.IsPortableMode)
+            {
+                WinRAliasPanel.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                WinRAliasCheck.IsChecked = CheckWinRAliasStatus();
+            }
             disableAnalytics.IsChecked = Properties.Settings.Default.disableTelemetry;
-            string buildSuffix = GetBuildNumberFromResources();
-            credN.Text = $"5.7.3 ({buildSuffix})\nMark Adderly\nNikitori\nMaksimCeleron, Bruh_SomeBody, Massgrave";
+            ShowHiddenTabsCheck.IsChecked = Properties.Settings.Default.showhiddentabs;
             if (string.IsNullOrEmpty(Settings.Default.lang))
             {
                 string systemLang = CultureInfo.CurrentUICulture.Name.ToLower();
                 string isoLang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.ToLower();
                 Settings.Default.lang = systemLang switch
                 {
-                    "zh-tw" or "zh-hk" or "zh-mo" => "tw",
-                    "zh-cn" or "zh-sg" or "zh-chs" => "zh",
+                    "zh-tw" or "zh-hk" or "zh-mo" or "zh-cn" or "zh-sg" or "zh-chs" => "zh",
 
                     _ => isoLang switch
                     {
                         "uk" => "uk",   // Украинский
-                        "cs" => "cs",   // Чешский
                         "ru" => "ru",   // Русский
-                        "az" => "az",   // Азербайджанский
-                        "es" => "es",   // Испанский
-                        "tl" => "tl",   // Тагальский
-                        "fil" => "tl",  // Филиппинский
-                        "tr" => "tr",   // Турецкий
-                        "ko" => "ko",   // Корейский
                         "zh" => "zh",   // Китайский
-                        "it" => "it",   // Итальянский
-                        "de" => "de",   // Немецкий
-                        "fr" => "fr",   // Французский
-                        "be" => "be",   // Белорусский
-                        "vi" => "vi",   // Вьетнамский
-                        "id" => "id",   // Индонезийский
-                        "hi" => "hi",   // Хинди
                         "ja" => "ja",   // Японский
-                        "kk" => "kk",   // Казахский
-                        "pt" => "pt",   // Португальский
-                        "lv" => "lv",   // Латвийский
-                        "fi" => "fi",   // Финский
-                        "et" => "et",   // Эстонский
-                        "pl" => "pl",   // Польский
-                        "th" => "th",   // Тайский
                         _ => "en"       // Стандартный (Английский)
                     }
                 };
@@ -109,16 +102,48 @@ namespace MakuTweakerNew
                 _ => 0
             };
 
-            relang();
+            LoadLang();
+
+            this.Loaded += SettingsAbout_Loaded;
+
+            if (_easterTimer == null)
+            {
+                _easterTimer = new System.Windows.Threading.DispatcherTimer();
+                _easterTimer.Interval = TimeSpan.FromMilliseconds(200);
+                _easterTimer.Tick += EasterTimer_Tick;
+            }
+
+            Application.Current.Exit += (s, args) =>
+            {
+                try
+                {
+                    _easterEggPlayer.Close(); string tempFilePath = Path.Combine(Path.GetTempPath(), "maku_easter.mp3");
+                    if (File.Exists(tempFilePath)) { File.Delete(tempFilePath); }
+                }
+                catch { }
+            };
             isLoaded = true;
+        }
+
+        public class MusicJsonInfo
+        {
+            public string name { get; set; }
         }
 
         private void DisableAnalytics_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("In the GitHub version, this function is a stub. This checkbox controls the blocking of Google Analytics methods.", "MakuTweaker Github",MessageBoxButton.OK,MessageBoxImage.Information);
+            MessageBox.Show("In the GitHub version, this function is a stub. This checkbox controls the blocking of Google Analytics methods.", "MakuTweaker Github", MessageBoxButton.OK, MessageBoxImage.Information);
             Properties.Settings.Default.disableTelemetry = (disableAnalytics.IsChecked == true);
             Properties.Settings.Default.Save();
         }
+
+        private void ShowHiddenTabsCheck_Click(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.showhiddentabs = (ShowHiddenTabsCheck.IsChecked == true);
+            Properties.Settings.Default.Save();
+            mw.UpdateTabsVisibility();
+        }
+
 
         private bool CheckWinRAliasStatus()
         {
@@ -224,7 +249,7 @@ namespace MakuTweakerNew
             Settings.Default.Save();
 
             mw.LoadLang(Settings.Default.lang);
-            relang();
+            LoadLang();
         }
 
         private void style_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -243,19 +268,15 @@ namespace MakuTweakerNew
             Settings.Default.Save();
         }
 
-        private void relang()
+        private void LoadLang()
         {
             var languageCode = Settings.Default.lang ?? "en";
             var ab = MainWindow.Localization.LoadLocalization(languageCode, "ab");
-            var abEn = languageCode != "en" ? MainWindow.Localization.LoadLocalization("en", "ab") : ab;
             var b = MainWindow.Localization.LoadLocalization(languageCode, "base");
-            var bEn = languageCode != "en" ? MainWindow.Localization.LoadLocalization("en", "base") : b;
 
-            string GetText(dynamic dict, dynamic dictEn, string category, string key)
-            {
-                try { return dict[category][key]; }
-                catch { return dictEn[category][key]; }
-            }
+            string buildSuffix = GetBuildNumberFromResources();
+            string makuadar = (languageCode == "ru") ? "Марк Аддерли" : "Mark Adderly";
+            credN.Text = $"5.8.7 ({buildSuffix})\n{makuadar}";
 
             credL.Text = ab["main"]["credL"];
             label.Text = ab["main"]["label"];
@@ -272,8 +293,249 @@ namespace MakuTweakerNew
             tooltip.Content = ab["main"]["cfg_info"];
             WinRAliasCheck.Content = ab["main"]["winr"];
             tooltipalias.Content = ab["main"]["winrinfo"];
-            disableAnalytics.Content = GetText(ab, abEn, "main", "disabletelemetry");
-            teltooltip.Content = GetText(ab, abEn, "main", "telemetryabt");
+            disableAnalytics.Content = ab["main"]["disabletelemetry"];
+            teltooltip.Content = ab["main"]["telemetryabt"];
+            specialThanks.Content = ab["main"]["specialthanks"];
+            ShowHiddenTabsCheck.Content = ab["main"]["showhiddentabs"];
+        }
+
+        private async void Logo_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 1)
+            {
+                _easterEggPlayer.Stop();
+                _isMusicPlaying = false;
+                SongCreditBorder.Visibility = Visibility.Collapsed;
+
+                if (_easterTimer != null)
+                {
+                    _easterTimer.Stop();
+                }
+                if (_currentProgressBar != null)
+                {
+                    _currentProgressBar.Visibility = Visibility.Collapsed;
+                    _currentProgressBar.Value = 0;
+                }
+            }
+            else if (e.ClickCount == 2)
+            {
+                try
+                {
+                    try
+                    {
+                        string jsonUrl = "https://github.com/AdderlyMark/MakuTweaker/raw/refs/heads/main/music.json";
+                        string jsonString = await _httpClient.GetStringAsync(jsonUrl);
+                        var musicData = JsonSerializer.Deserialize<MusicJsonInfo>(jsonString);
+
+                        if (musicData != null && !string.IsNullOrEmpty(musicData.name))
+                        {
+                            _currentMusicName = "♪ " + musicData.name;
+                            SongCreditText.Text = _currentMusicName;
+                            SongCreditBorder.Visibility = Visibility.Visible;
+                        }
+                    }
+                    catch {}
+
+                    string audioUrl = "https://github.com/AdderlyMark/MakuTweaker/raw/refs/heads/main/easter_music.mp3";
+                    string tempFilePath = Path.Combine(Path.GetTempPath(), "maku_easter.mp3");
+                    if (!File.Exists(tempFilePath))
+                    {
+                        byte[] audioBytes = await _httpClient.GetByteArrayAsync(audioUrl);
+                        await File.WriteAllBytesAsync(tempFilePath, audioBytes);
+                    }
+
+                    _easterEggPlayer.Stop();
+                    _easterEggPlayer.Open(new Uri(tempFilePath));
+                    _easterEggPlayer.Volume = 0.15;
+
+                    _easterEggPlayer.MediaEnded -= EasterEggPlayer_MediaEnded;
+                    _easterEggPlayer.MediaEnded += EasterEggPlayer_MediaEnded;
+
+                    _easterEggPlayer.Play();
+                    _isMusicPlaying = true;
+
+                    if (_currentProgressBar != null)
+                    {
+                        _currentProgressBar.Visibility = Visibility.Visible;
+                    }
+
+                    if (_easterTimer != null && !_easterTimer.IsEnabled)
+                    {
+                        _easterTimer.Start();
+                    }
+                }
+                catch
+                {
+                    if (_currentProgressBar != null)
+                    {
+                        _currentProgressBar.Visibility = Visibility.Collapsed;
+                    }
+                    SongCreditBorder.Visibility = Visibility.Collapsed;
+                    _isMusicPlaying = false;
+                }
+            }
+        }
+
+        private void EasterTimer_Tick(object sender, EventArgs e)
+        {
+            if (_easterEggPlayer.Source != null && _easterEggPlayer.NaturalDuration.HasTimeSpan)
+            {
+                var totalSec = _easterEggPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                var currentSec = _easterEggPlayer.Position.TotalSeconds;
+
+                if (totalSec > 0 && _currentProgressBar != null)
+                {
+                    _currentProgressBar.Maximum = totalSec;
+                    _currentProgressBar.Value = currentSec;
+                }
+            }
+        }
+
+        private void EasterEggPlayer_MediaEnded(object sender, EventArgs e)
+        {
+            _isMusicPlaying = false;
+            SongCreditBorder.Visibility = Visibility.Collapsed;
+            if (_easterTimer != null)
+            {
+                _easterTimer.Stop();
+            }
+            if (_currentProgressBar != null)
+            {
+                _currentProgressBar.Visibility = Visibility.Collapsed;
+                _currentProgressBar.Value = 0;
+            }
+        }
+
+        private void SettingsAbout_Loaded(object sender, RoutedEventArgs e)
+        {
+            _currentProgressBar = easterProgressBar;
+
+            if (_isMusicPlaying)
+            {
+                _currentProgressBar.Visibility = Visibility.Visible;
+
+                if (!string.IsNullOrEmpty(_currentMusicName))
+                {
+                    SongCreditText.Text = _currentMusicName;
+                    SongCreditBorder.Visibility = Visibility.Visible;
+                }
+
+                if (_easterEggPlayer.Source != null && _easterEggPlayer.NaturalDuration.HasTimeSpan)
+                {
+                    var totalSec = _easterEggPlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                    var currentSec = _easterEggPlayer.Position.TotalSeconds;
+
+                    if (totalSec > 0)
+                    {
+                        _currentProgressBar.Maximum = totalSec;
+                        _currentProgressBar.Value = currentSec;
+                    }
+                }
+
+                if (_easterTimer != null && !_easterTimer.IsEnabled)
+                {
+                    _easterTimer.Start();
+                }
+            }
+            else
+            {
+                _currentProgressBar.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void OpenLangOverlay_Click(object sender, RoutedEventArgs e)
+        {
+            var order = new Dictionary<string, int>
+            {
+                {"en", 1}, {"ru", 2}, {"uk", 3},
+                {"be", 4}, {"kk", 5}, {"cs", 6},
+                {"de", 7}, {"fr", 8}, {"es", 9},
+                {"pl", 10}, {"it", 11}, {"pt", 12},
+                {"fi", 13}, {"et", 14}, {"lv", 15},
+                {"az", 16}, {"tr", 17}, {"hi", 18},
+                {"id", 19}, {"vi", 20}, {"th", 21},
+                {"zh", 22}, {"ko", 23}, {"tl", 24},
+                {"ja", 25}, {"tw", 26}
+            };
+
+            FullLangList.ItemsSource = lang.Items.Cast<ComboBoxItem>()
+                .Select(x => new
+                {
+                    Content = x.Content,
+                    Tag = x.Tag?.ToString() ?? "",
+                    Priority = order.ContainsKey(x.Tag?.ToString() ?? "") ? order[x.Tag.ToString()] : 99
+                })
+                .OrderBy(x => x.Priority)
+                .ToList();
+
+            LanguageOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void FullLangItem_Click(object sender, RoutedEventArgs e)
+        {
+            LanguageOverlay.Visibility = Visibility.Collapsed;
+            var btn = sender as Button;
+            if (btn != null && btn.Tag != null)
+            {
+                string selectedTag = btn.Tag.ToString();
+                foreach (ComboBoxItem item in lang.Items)
+                {
+                    if (item.Tag?.ToString() == selectedTag)
+                    {
+                        lang.SelectedItem = item;
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void CloseLangOverlay_Click(object sender, RoutedEventArgs e)
+        {
+            LanguageOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void Border_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private string GetBuildNumberFromResources()
+        {
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                string resourceName = "MakuTweakerNew.BuildNumber.txt";
+
+                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                {
+                    if (stream == null) return "Unknown";
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        return reader.ReadToEnd().Trim();
+                    }
+                }
+            }
+            catch
+            {
+                return "N/A";
+            }
+        }
+
+        private void specialThanks_Click(object sender, RoutedEventArgs e)
+        {
+            var languageCode = Settings.Default.lang ?? "en";
+            var ab = MainWindow.Localization.LoadLocalization(languageCode, "ab");
+
+            var text = ab["main"]["specialthankstext"];
+            var title = ab["main"]["specialthanks"];
+
+            text += "\nMicaWPF, ModernWpfUI, iNKORE.UI.WPF.Modern, LibreHardwareMonitorLib";
+
+            iNKORE.UI.WPF.Modern.Controls.MessageBox.Show(
+                text,
+                title,
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
 
         //CONFIG
@@ -333,6 +595,10 @@ namespace MakuTweakerNew
             public bool Exp_Gallery { get; set; }
             public bool Exp_ShowPc { get; set; }
             public bool Exp_Shortcut { get; set; }
+            public bool Exp_QuickFreq { get; set; }
+            public bool Exp_Checkboxes { get; set; }
+            public bool Exp_RecDocs { get; set; }
+            public bool Exp_ConfirmDel { get; set; }
             public bool Wpd_AutoUpdate { get; set; }
             public bool Wpd_QualityDrivers { get; set; }
             public bool Wpd_Reserves { get; set; }
@@ -400,6 +666,10 @@ namespace MakuTweakerNew
                     Exp_Gallery = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}", false)?.GetValue("System.IsPinnedToNameSpaceTree")?.Equals(0) ?? false,
                     Exp_ShowPc = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel", false)?.GetValue("{20D04FE0-3AEA-1069-A2D8-08002B30309D}")?.Equals(0) ?? false,
                     Exp_Shortcut = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\NamingTemplates", false)?.GetValue("ShortcutNameTemplate")?.Equals("%s.lnk") ?? false,
+                    Exp_QuickFreq = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer", false)?.GetValue("ShowFrequent")?.Equals(0) ?? false,
+                    Exp_Checkboxes = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced", false)?.GetValue("AutoCheckSelect")?.Equals(1) ?? false,
+                    Exp_RecDocs = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer", false)?.GetValue("NoRecentDocsHistory")?.Equals(1) ?? false,
+                    Exp_ConfirmDel = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", false)?.GetValue("ConfirmFileDelete")?.Equals(1) ?? false,
                     //wu
                     Wpd_AutoUpdate = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU")?.GetValue("NoAutoUpdate")?.Equals(1) ?? false,
                     Wpd_QualityDrivers = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate")?.GetValue("ExcludeWUDriversInQualityUpdate")?.Equals(1) ?? false,
@@ -515,7 +785,7 @@ namespace MakuTweakerNew
 
         private void ApplyPresetBackground(MakuPreset preset, IProgress<int> progress)
         {
-            int totalSteps = 37;
+            int totalSteps = 41;
             int currentStep = 0;
 
             Action ReportProgress = () =>
@@ -557,6 +827,22 @@ namespace MakuTweakerNew
                     key?.DeleteValue("ShortcutNameTemplate", false);
                 }
             }
+            ReportProgress();
+
+            if (preset.Exp_QuickFreq) Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer").SetValue("ShowFrequent", 0);
+            else Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer").SetValue("ShowFrequent", 1);
+            ReportProgress();
+
+            if (preset.Exp_Checkboxes) Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced").SetValue("AutoCheckSelect", 1);
+            else Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced").SetValue("AutoCheckSelect", 0);
+            ReportProgress();
+
+            if (preset.Exp_RecDocs) Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer").SetValue("NoRecentDocsHistory", 1);
+            else Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer").SetValue("NoRecentDocsHistory", 0);
+            ReportProgress();
+
+            if (preset.Exp_ConfirmDel) Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer").SetValue("ConfirmFileDelete", 1);
+            else Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer").SetValue("ConfirmFileDelete", 0);
             ReportProgress();
 
             // sysAndRec
@@ -912,83 +1198,6 @@ namespace MakuTweakerNew
                 return true;
             }
             return false;
-        }
-        private void OpenLangOverlay_Click(object sender, RoutedEventArgs e)
-        {
-            var order = new Dictionary<string, int>
-            {
-                {"en", 1}, {"ru", 2}, {"uk", 3},
-                {"be", 4}, {"kk", 5}, {"cs", 6}, 
-                {"de", 7}, {"fr", 8}, {"es", 9},
-                {"pl", 10}, {"it", 11}, {"pt", 12},
-                {"fi", 13}, {"et", 14}, {"lv", 15},
-                {"az", 16}, {"tr", 17}, {"hi", 18},
-                {"id", 19}, {"vi", 20}, {"th", 21},
-                {"ja", 22}, {"ko", 23}, {"tl", 24},
-                {"zh", 25}, {"tw", 26}
-            };
-
-            FullLangList.ItemsSource = lang.Items.Cast<ComboBoxItem>()
-                .Select(x => new
-                {
-                    Content = x.Content,
-                    Tag = x.Tag?.ToString() ?? "",
-                    Priority = order.ContainsKey(x.Tag?.ToString() ?? "") ? order[x.Tag.ToString()] : 99
-                })
-                .OrderBy(x => x.Priority)
-                .ToList();
-
-            LanguageOverlay.Visibility = Visibility.Visible;
-        }
-
-        private void FullLangItem_Click(object sender, RoutedEventArgs e)
-        {
-            LanguageOverlay.Visibility = Visibility.Collapsed;
-            var btn = sender as Button;
-            if (btn != null && btn.Tag != null)
-            {
-                string selectedTag = btn.Tag.ToString();
-                foreach (ComboBoxItem item in lang.Items)
-                {
-                    if (item.Tag?.ToString() == selectedTag)
-                    {
-                        lang.SelectedItem = item;
-                        break;
-                    }
-                }
-            }
-        }
-
-        private void CloseLangOverlay_Click(object sender, RoutedEventArgs e)
-        {
-            LanguageOverlay.Visibility = Visibility.Collapsed;
-        }
-
-        private void Border_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            e.Handled = true;
-        }
-
-        private string GetBuildNumberFromResources()
-        {
-            try
-            {
-                var assembly = Assembly.GetExecutingAssembly();
-                string resourceName = "MakuTweakerNew.BuildNumber.txt";
-
-                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-                {
-                    if (stream == null) return "Unknown";
-                    using (StreamReader reader = new StreamReader(stream))
-                    {
-                        return reader.ReadToEnd().Trim();
-                    }
-                }
-            }
-            catch
-            {
-                return "N/A";
-            }
         }
     }
 }

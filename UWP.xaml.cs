@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO.Packaging;
+using System.IO;
 using System.Linq;
 using System.Media;
 using System.Text;
@@ -16,6 +16,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml;
 using Microsoft.Win32;
 using iNKORE.UI.WPF.Modern.Controls;
 using ModernWpf.Media.Animation;
@@ -168,63 +169,119 @@ namespace MakuTweakerNew
 
             string[] appIds =
             {
-        "Microsoft.ZuneVideo",
-        "Microsoft.ZuneMusic",
-        "Microsoft.MicrosoftStickyNotes",
-        "Microsoft.MixedReality.Portal",
-        "Microsoft.MicrosoftSolitaireCollection",
-        "Microsoft.Messaging",
-        "Microsoft.WindowsFeedbackHub",
-        "microsoft.windowscommunicationsapps",
-        "Microsoft.BingNews",
-        "Microsoft.Microsoft3DViewer",
-        "Microsoft.BingWeather",
-        "Microsoft.549981C3F5F10",
-        "Microsoft.XboxApp",
-        "Microsoft.GetHelp",
-        "Microsoft.WindowsCamera",
-        "Microsoft.WindowsMaps",
-        "Microsoft.Office.OneNote",
-        "Microsoft.YourPhone",
-        "Microsoft.Windows.DevHome",
-        "Clipchamp.Clipchamp",
-        "Microsoft.PowerAutomateDesktop",
-        "Microsoft.Getstarted",
-        "Microsoft.WindowsSoundRecorder",
-        "Microsoft.WindowsStore",
-        "Microsoft.People",
-        "Microsoft.SkypeApp",
-        "Microsoft.WindowsAlarms",
-        "Microsoft.OutlookForWindows",
-        "MSTeams",
-        "Microsoft.Todos",
-        "Microsoft.Copilot",
-        "Microsoft.MicrosoftOfficeHub"
-    };
-            int installedCount = 0;
+                "Microsoft.ZuneVideo",
+                "Microsoft.ZuneMusic",
+                "Microsoft.MicrosoftStickyNotes",
+                "Microsoft.MixedReality.Portal",
+                "Microsoft.MicrosoftSolitaireCollection",
+                "Microsoft.Messaging",
+                "Microsoft.WindowsFeedbackHub",
+                "microsoft.windowscommunicationsapps",
+                "Microsoft.BingNews",
+                "Microsoft.Microsoft3DViewer",
+                "Microsoft.BingWeather",
+                "Microsoft.549981C3F5F10",
+                "Microsoft.XboxApp",
+                "Microsoft.GetHelp",
+                "Microsoft.WindowsCamera",
+                "Microsoft.WindowsMaps",
+                "Microsoft.Office.OneNote",
+                "Microsoft.YourPhone",
+                "Microsoft.Windows.DevHome",
+                "Clipchamp.Clipchamp",
+                "Microsoft.PowerAutomateDesktop",
+                "Microsoft.Getstarted",
+                "Microsoft.WindowsSoundRecorder",
+                "Microsoft.WindowsStore",
+                "Microsoft.People",
+                "Microsoft.SkypeApp",
+                "Microsoft.WindowsAlarms",
+                "Microsoft.OutlookForWindows",
+                "MSTeams",
+                "Microsoft.Todos",
+                "Microsoft.Copilot",
+                "Microsoft.MicrosoftOfficeHub",
+                "OneDrive",
+                "MicrosoftCorporationII.QuickAssist",
+                "Microsoft.Paint",
+                "Microsoft.WindowsNotepad",
+                "Microsoft.WindowsCalculator"
+            };
 
+            int installedCount = 0;
             var installedApps = await GetInstalledUWPAppsAsync();
+
             foreach (var appId in appIds)
             {
-                bool isInstalled = installedApps.Contains(appId);
+                string installLocation = null;
+                bool isInstalled = installedApps.TryGetValue(appId, out installLocation);
 
-                if (appId == "Microsoft.XboxApp")
+                if (appId == "Microsoft.XboxApp" && !isInstalled)
                 {
-                    isInstalled = installedApps.Contains("Microsoft.XboxApp") ||
-                                  installedApps.Contains("Microsoft.GamingApp");
+                    isInstalled = installedApps.TryGetValue("Microsoft.GamingApp", out installLocation);
                 }
 
-                if (appId == "Microsoft.Microsoft3DViewer")
+                if (appId == "OneDrive")
                 {
-                    isInstalled = installedApps.Contains("Microsoft.Microsoft3DViewer") ||
-                                  installedApps.Contains("Microsoft.MSPaint") ||
-                                  installedApps.Contains("Microsoft.3DBuilder");
+                    string localApp = Environment.GetEnvironmentVariable("LocalAppData");
+                    string progFiles = Environment.GetEnvironmentVariable("ProgramFiles");
+                    string progFilesX86 = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+
+                    string[] oneDrivePaths = {
+                        $@"{localApp}\Microsoft\OneDrive\OneDrive.exe",
+                        $@"{progFiles}\Microsoft OneDrive\OneDrive.exe",
+                        $@"{progFilesX86}\Microsoft OneDrive\OneDrive.exe"
+                    };
+
+                    var installedPath = oneDrivePaths.FirstOrDefault(File.Exists);
+                    if (installedPath != null)
+                    {
+                        isInstalled = true;
+                        if (ImageMap.TryGetValue("OneDrive", out var img))
+                        {
+                            try
+                            {
+                                var icon = System.Drawing.Icon.ExtractAssociatedIcon(installedPath);
+                                if (icon != null)
+                                {
+                                    img.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(
+                                        icon.Handle, System.Windows.Int32Rect.Empty,
+                                        BitmapSizeOptions.FromEmptyOptions());
+                                }
+                            }
+                            catch { }
+                        }
+                    }
                 }
 
-                if (appId == "Microsoft.Copilot" || appId == "Microsoft.MicrosoftOfficeHub")
+                if (appId == "Microsoft.Microsoft3DViewer" && !isInstalled)
                 {
-                    isInstalled = installedApps.Contains("Microsoft.Copilot") ||
-                                  installedApps.Contains("Microsoft.MicrosoftOfficeHub");
+                    isInstalled = installedApps.TryGetValue("Microsoft.MSPaint", out installLocation) ||
+                                  installedApps.TryGetValue("Microsoft.3DBuilder", out installLocation);
+                }
+
+                if ((appId == "Microsoft.Copilot" || appId == "Microsoft.MicrosoftOfficeHub") && !isInstalled)
+                {
+                    isInstalled = installedApps.TryGetValue("Microsoft.Copilot", out installLocation) ||
+                                  installedApps.TryGetValue("Microsoft.MicrosoftOfficeHub", out installLocation);
+                }
+
+                if (isInstalled && !string.IsNullOrEmpty(installLocation))
+                {
+                    string logoPath = await GetAppIconPathAsync(installLocation);
+                    if (logoPath != null && ImageMap.TryGetValue(appId, out var img))
+                    {
+                        try
+                        {
+                            var bitmap = new BitmapImage();
+                            bitmap.BeginInit();
+                            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                            bitmap.UriSource = new Uri(logoPath);
+                            bitmap.EndInit();
+                            img.Source = bitmap;
+                        }
+                        catch { }
+                    }
                 }
 
                 if (SettingsCardMap.TryGetValue(appId, out var mappedSettingsCard))
@@ -237,14 +294,15 @@ namespace MakuTweakerNew
                 if (ToggleMap.TryGetValue(appId, out var mappedToggle))
                 {
                     mappedToggle.IsEnabled = isInstalled;
-                    if (mappedToggle != u9t && mappedToggle != u15t && mappedToggle != u16t 
-                        && mappedToggle != u17t && mappedToggle != u23t && mappedToggle != u24t)
+                    if (mappedToggle != u9t && mappedToggle != u15t && mappedToggle != u16t
+                        && mappedToggle != u17t && mappedToggle != u23t && mappedToggle != u24t && mappedToggle != u32t
+                        && mappedToggle != u37t && mappedToggle != u38t && mappedToggle != u39t)
                         mappedToggle.IsOn = isInstalled;
                     else
                         mappedToggle.IsOn = false;
                 }
             }
-            
+
             UpdateCategorySelectAllState(e1, selectAllE1);
             UpdateCategorySelectAllState(e2, selectAllE2);
             UpdateCategoryVisibility();
@@ -252,7 +310,8 @@ namespace MakuTweakerNew
             b.IsEnabled = AllToggles.Any(t => t.IsOn);
             _isChecking = false;
 
-            bool shouldHide = installedCount < 5;
+            bool shouldHide = !Properties.Settings.Default.showhiddentabs && installedCount < 5;
+
             if (mw != null)
             {
                 mw.c5.Visibility = shouldHide ? Visibility.Collapsed : Visibility.Visible;
@@ -324,9 +383,9 @@ namespace MakuTweakerNew
 
         private void UpdateCategoryVisibility()
         {
-            var bloatCards = new[] { u1, u2, u3, u4, u5, u6, u7, u8, u10, u11, u12, u13, u14, u18, u19, u20, u21, u22, u25, u26, u27, u28, u29, u30, u31 };
-            var popularCards = new[] { u15, u16, u17, u9 };
-            var necessaryCards = new[] { u23, u24 };
+            var bloatCards = new[] { u1, u2, u3, u4, u5, u6, u7, u8, u10, u11, u12, u13, u14, u18, u19, u20, u21, u22, u25, u26, u27, u28, u29, u30, u31, u33 };
+            var popularCards = new[] { u15, u16, u17, u9, u37 };
+            var necessaryCards = new[] { u23, u24, u32, u38, u39 };
 
             bool bloatHasVisible = bloatCards.Any(c => c.Visibility == Visibility.Visible);
             bool popularHasVisible = popularCards.Any(c => c.Visibility == Visibility.Visible);
@@ -344,7 +403,7 @@ namespace MakuTweakerNew
             u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,
             u11,u12,u13,u14,u15,u16,u17,u18,
             u19,u20,u21,u22,u23,u24,u25,u26,u27,u28,
-            u29, u30, u31
+            u29, u30, u31, u32, u33, u37, u38, u39
         };
 
         private List<iNKORE.UI.WPF.Modern.Controls.ToggleSwitch> AllToggles => new()
@@ -352,7 +411,48 @@ namespace MakuTweakerNew
             u1t,u2t,u3t,u4t,u5t,u6t,u7t,u8t,u9t,u10t,
             u11t,u12t,u13t,u14t,u15t,u16t,u17t,u18t,
             u19t,u20t,u21t,u22t,u23t,u24t,u25t,u26t,u27t,u28t,
-            u29t, u30t, u31t
+            u29t, u30t, u31t, u32t, u33t, u37t, u38t, u39t
+        };
+
+        private Dictionary<string, Image> ImageMap => new()
+        {
+            ["Microsoft.MixedReality.Portal"] = u1Img,
+            ["Microsoft.MicrosoftSolitaireCollection"] = u2Img,
+            ["Microsoft.Messaging"] = u3Img,
+            ["Microsoft.549981C3F5F10"] = u4Img,
+            ["Microsoft.GetHelp"] = u5Img,
+            ["Microsoft.WindowsFeedbackHub"] = u6Img,
+            ["Microsoft.Windows.DevHome"] = u7Img,
+            ["Microsoft.Microsoft3DViewer"] = u8Img,
+            ["Microsoft.YourPhone"] = u9Img,
+            ["Microsoft.WindowsMaps"] = u10Img,
+            ["Microsoft.PowerAutomateDesktop"] = u11Img,
+            ["Clipchamp.Clipchamp"] = u12Img,
+            ["microsoft.windowscommunicationsapps"] = u13Img,
+            ["Microsoft.Office.OneNote"] = u14Img,
+            ["Microsoft.ZuneMusic"] = u15Img,
+            ["Microsoft.ZuneVideo"] = u16Img,
+            ["Microsoft.WindowsCamera"] = u17Img,
+            ["Microsoft.BingNews"] = u18Img,
+            ["Microsoft.BingWeather"] = u19Img,
+            ["Microsoft.MicrosoftStickyNotes"] = u20Img,
+            ["Microsoft.Getstarted"] = u21Img,
+            ["Microsoft.WindowsSoundRecorder"] = u22Img,
+            ["Microsoft.WindowsStore"] = u23Img,
+            ["Microsoft.XboxApp"] = u24Img,
+            ["Microsoft.People"] = u25Img,
+            ["Microsoft.SkypeApp"] = u26Img,
+            ["Microsoft.WindowsAlarms"] = u27Img,
+            ["Microsoft.OutlookForWindows"] = u28Img,
+            ["MSTeams"] = u29Img,
+            ["Microsoft.Todos"] = u30Img,
+            ["Microsoft.Copilot"] = u31Img,
+            ["Microsoft.MicrosoftOfficeHub"] = u31Img,
+            ["OneDrive"] = u32Img,
+            ["MicrosoftCorporationII.QuickAssist"] = u33Img,
+            ["Microsoft.Paint"] = u37Img,
+            ["Microsoft.WindowsNotepad"] = u38Img,
+            ["Microsoft.WindowsCalculator"] = u39Img
         };
 
         private Dictionary<string, iNKORE.UI.WPF.Modern.Controls.SettingsCard> SettingsCardMap => new()
@@ -388,7 +488,12 @@ namespace MakuTweakerNew
             ["MSTeams"] = u29,
             ["Microsoft.Todos"] = u30,
             ["Microsoft.Copilot"] = u31,
-            ["Microsoft.MicrosoftOfficeHub"] = u31
+            ["Microsoft.MicrosoftOfficeHub"] = u31,
+            ["OneDrive"] = u32,
+            ["MicrosoftCorporationII.QuickAssist"] = u33,
+            ["Microsoft.Paint"] = u37,
+            ["Microsoft.WindowsNotepad"] = u38,
+            ["Microsoft.WindowsCalculator"] = u39
         };
 
         private Dictionary<string, iNKORE.UI.WPF.Modern.Controls.ToggleSwitch> ToggleMap => new()
@@ -424,20 +529,66 @@ namespace MakuTweakerNew
             ["MSTeams"] = u29t,
             ["Microsoft.Todos"] = u30t,
             ["Microsoft.Copilot"] = u31t,
-            ["Microsoft.MicrosoftOfficeHub"] = u31t
+            ["Microsoft.MicrosoftOfficeHub"] = u31t,
+            ["OneDrive"] = u32t,
+            ["MicrosoftCorporationII.QuickAssist"] = u33t,
+            ["Microsoft.Paint"] = u37t,
+            ["Microsoft.WindowsNotepad"] = u38t,
+            ["Microsoft.WindowsCalculator"] = u39t
         };
-        private async Task<HashSet<string>> GetInstalledUWPAppsAsync()
+
+        private Dictionary<iNKORE.UI.WPF.Modern.Controls.ToggleSwitch, string> AnalyticsMap => new()
+        {
+            [u1t] = "mixedreality",
+            [u2t] = "solitaire",
+            [u3t] = "messaging",
+            [u4t] = "cortana",
+            [u5t] = "gethelp",
+            [u6t] = "feedbackhub",
+            [u7t] = "devhome",
+            [u8t] = "3dviewer",
+            [u9t] = "yourphone",
+            [u10t] = "maps",
+            [u11t] = "powerautomate",
+            [u12t] = "clipchamp",
+            [u13t] = "mailcalendar",
+            [u14t] = "onenote",
+            [u15t] = "zunemusic",
+            [u16t] = "zunevideo",
+            [u17t] = "camera",
+            [u18t] = "bingnews",
+            [u19t] = "bingweather",
+            [u20t] = "stickynotes",
+            [u21t] = "getstarted",
+            [u22t] = "soundrecorder",
+            [u23t] = "store",
+            [u24t] = "xbox",
+            [u25t] = "people",
+            [u26t] = "skype",
+            [u27t] = "alarms",
+            [u28t] = "outlook",
+            [u29t] = "teams",
+            [u30t] = "todos",
+            [u31t] = "copilot",
+            [u32t] = "onedrive",
+            [u33t] = "quickassist",
+            [u37t] = "paint",
+            [u38t] = "notepad",
+            [u39t] = "calculator"
+        };
+
+        private async Task<Dictionary<string, string>> GetInstalledUWPAppsAsync()
         {
             return await Task.Run(() =>
             {
-                var result = new HashSet<string>();
+                var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 try
                 {
                     var psi = new ProcessStartInfo
                     {
                         FileName = "powershell.exe",
-                        Arguments = "-Command \"Get-AppxPackage | Select -ExpandProperty Name\"",
+                        Arguments = "-Command \"Get-AppxPackage | ForEach-Object { $_.Name + '|' + $_.InstallLocation }\"",
                         RedirectStandardOutput = true,
                         UseShellExecute = false,
                         CreateNoWindow = true
@@ -448,7 +599,13 @@ namespace MakuTweakerNew
                     process.WaitForExit();
 
                     foreach (var line in output.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
-                        result.Add(line.Trim());
+                    {
+                        var parts = line.Split('|');
+                        if (parts.Length == 2 && !string.IsNullOrWhiteSpace(parts[1]))
+                        {
+                            result[parts[0].Trim()] = parts[1].Trim();
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -459,6 +616,56 @@ namespace MakuTweakerNew
 
                 return result;
             });
+        }
+
+        private async Task<string> GetAppIconPathAsync(string installLocation)
+        {
+            return await Task.Run(() =>
+            {
+                if (string.IsNullOrEmpty(installLocation)) return null;
+
+                string manifestPath = System.IO.Path.Combine(installLocation, "AppxManifest.xml");
+                if (!System.IO.File.Exists(manifestPath)) return null;
+
+                try
+                {
+                    var doc = new XmlDocument();
+                    doc.Load(manifestPath);
+                    var nsmgr = new XmlNamespaceManager(doc.NameTable);
+                    nsmgr.AddNamespace("uap", "http://schemas.microsoft.com/appx/manifest/uap/windows10");
+
+                    var node = doc.SelectSingleNode("//uap:VisualElements", nsmgr);
+                    if (node != null && node.Attributes["Square44x44Logo"] != null)
+                    {
+                        string logoRelPath = node.Attributes["Square44x44Logo"].Value;
+                        return FindActualImagePath(installLocation, logoRelPath);
+                    }
+                }
+                catch { }
+
+                return null;
+            });
+        }
+
+        private string FindActualImagePath(string installLocation, string relativePath)
+        {
+            string fullPath = System.IO.Path.Combine(installLocation, relativePath);
+            if (System.IO.File.Exists(fullPath)) return fullPath;
+
+            string dir = System.IO.Path.GetDirectoryName(fullPath);
+            string name = System.IO.Path.GetFileNameWithoutExtension(fullPath);
+            string ext = System.IO.Path.GetExtension(fullPath);
+
+            if (System.IO.Directory.Exists(dir))
+            {
+                var files = System.IO.Directory.GetFiles(dir, $"{name}*{ext}");
+                var match = files.FirstOrDefault(f => f.Contains("scale-200"))
+                         ?? files.FirstOrDefault(f => f.Contains("scale-100"))
+                         ?? files.FirstOrDefault(f => !f.Contains("targetsize"));
+
+                return match;
+            }
+            return null;
         }
 
         private void FadeIn(UIElement element, double durationSeconds)
@@ -526,12 +733,20 @@ namespace MakuTweakerNew
                             count += 5;
                         }
                     }
+                    else if (toggle == u32t)
+                    {
+                        ILOVEMAKUTWEAKERDialog dialog = new ILOVEMAKUTWEAKERDialog("OneDrive");
+                        var result = await dialog.ShowAsync();
+                        int resulty = await dialog.TaskCompletionSource.Task;
+                        if (resulty == 0) return;
+                        else count++;
+                    }
                     else if (toggle == u25t)
                         count += 2;
                     else if (toggle == u31t)
                         count += 2;
                     else
-                        count++;       
+                        count++;
                 }
             }
 
@@ -587,8 +802,13 @@ namespace MakuTweakerNew
         (u29t, "MSTeams"),
         (u30t, "Microsoft.Todos"),
         (u31t, "Microsoft.Copilot"),
-        (u31t, "Microsoft.MicrosoftOfficeHub")
-            };
+        (u31t, "Microsoft.MicrosoftOfficeHub"),
+        (u32t, "OneDrive"),
+        (u33t, "MicrosoftCorporationII.QuickAssist"),
+        (u37t, "Microsoft.Paint"),
+        (u38t, "Microsoft.WindowsNotepad"),
+        (u39t, "Microsoft.WindowsCalculator")
+    };
 
             var toRemove = appPackages
                 .Where(x => x.toggle.IsOn && x.toggle.Visibility == Visibility.Visible)
@@ -602,8 +822,26 @@ namespace MakuTweakerNew
                     .Select(x => x.toggle)
                     .Distinct();
 
-                var script = string.Join("\n", toRemove.Select(pkg =>
-                    $"Get-AppxPackage -Name '{pkg}' | Remove-AppxPackage"));
+                var uwpToRemove = toRemove.Where(pkg => pkg != "OneDrive").ToList();
+                bool removeOneDrive = toRemove.Contains("OneDrive");
+
+                string script = "";
+                if (uwpToRemove.Count > 0)
+                {
+                    script += string.Join("\n", uwpToRemove.Select(pkg =>
+                        $"Get-AppxPackage -AllUsers -Name '{pkg}' | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue;"));
+                }
+                if (removeOneDrive)
+                {
+                    script += @"
+Stop-Process -Name OneDrive -Force -ErrorAction SilentlyContinue;
+if (Test-Path ""$env:SystemRoot\System32\OneDriveSetup.exe"") { Start-Process ""$env:SystemRoot\System32\OneDriveSetup.exe"" -ArgumentList ""/uninstall"" -WindowStyle Hidden -Wait; }
+Remove-Item -Path ""$env:LocalAppData\Microsoft\OneDrive"" -Recurse -Force -ErrorAction SilentlyContinue;
+Remove-Item -Path ""$env:ProgramData\Microsoft OneDrive"" -Recurse -Force -ErrorAction SilentlyContinue;
+Remove-Item -Path ""$env:UserProfile\OneDrive"" -Recurse -Force -ErrorAction SilentlyContinue;
+Remove-ItemProperty -Path ""HKCU:\Software\Microsoft\OneDrive"" -Name * -ErrorAction SilentlyContinue;
+";
+                }
 
                 var psi = new ProcessStartInfo
                 {
@@ -663,7 +901,7 @@ namespace MakuTweakerNew
             var main = MainWindow.Localization.LoadLocalization(languageCode, "base");
 
             label.Text = uwp["main"]["label"];
-            info2.Message = uwp["main"]["info1"] + "\n" + uwp["main"]["info2"];
+            info2.Message = uwp["main"]["info1"];
 
             selectAllE1.Content = quick["main"]["checkall"];
             selectAllE2.Content = quick["main"]["checkall"];
@@ -682,6 +920,8 @@ namespace MakuTweakerNew
             u20.Header = uwp["main"]["u20"];
             u22.Header = uwp["main"]["u22"];
             u27.Header = uwp["main"]["u27"];
+            u38.Header = uwp["main"]["u38"];
+            u39.Header = uwp["main"]["u39"];
 
             e1.Header = uwp["main"]["mode1"];
             e2.Header = uwp["main"]["mode2"];

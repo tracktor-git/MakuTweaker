@@ -112,6 +112,10 @@ namespace MakuTweakerNew
             driveslabel.Text = expl["main"]["driveslabel"];
             hide.Content = expl["main"]["choose"];
             showall.Content = expl["main"]["showall"];
+            quickfreq.Header = expl["main"]["quickfreq"];
+            checkboxes.Header = expl["main"]["checkboxes"];
+            recdocs.Header = expl["main"]["recdocs"];
+            confirmdel.Header = expl["main"]["confirmdel"];
 
             foreach (var toggle in AllToggles)
             {
@@ -128,7 +132,11 @@ namespace MakuTweakerNew
             pchome,
             gallery,
             showpc,
-            shortcut
+            shortcut,
+            quickfreq,
+            recdocs,
+            checkboxes,
+            confirmdel
         };
         private void checkReg()
         {
@@ -164,6 +172,10 @@ namespace MakuTweakerNew
             gallery.IsOn = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}", true)?.GetValue("System.IsPinnedToNameSpaceTree")?.Equals(0) ?? false;
             showpc.IsOn = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel", true)?.GetValue("{20D04FE0-3AEA-1069-A2D8-08002B30309D}")?.Equals(0) ?? false;
             shortcut.IsOn = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\NamingTemplates", true)?.GetValue("ShortcutNameTemplate")?.Equals("%s.lnk") ?? false;
+            quickfreq.IsOn = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer", true)?.GetValue("ShowFrequent")?.Equals(0) ?? false;
+            checkboxes.IsOn = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced", true)?.GetValue("AutoCheckSelect")?.Equals(1) ?? false;
+            recdocs.IsOn = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer", true)?.GetValue("NoRecentDocsHistory")?.Equals(1) ?? false;
+            confirmdel.IsOn = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", true)?.GetValue("ConfirmFileDelete")?.Equals(1) ?? false;
 
             if (Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\DelegateFolders\{F5FB2C77-0E2F-4A16-A381-3E560C68BC83}") == null ||
                 Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\DelegateFolders\{F5FB2C77-0E2F-4A16-A381-3E560C68BC83}") == null)
@@ -302,15 +314,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (hidden.IsOn)
-                {
-                    case true:
-                            Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced").SetValue("Hidden", 1);
-                        break;
-                    case false:
-                            Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced").SetValue("Hidden", 0);
-                        break;
-                }
+                Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced")
+                    .SetValue("Hidden", hidden.IsOn ? 1 : 0);
             }
         }
 
@@ -318,15 +323,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (ext.IsOn)
-                {
-                    case true:
-                            Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced").SetValue("HideFileExt", 0);
-                        break;
-                    case false:
-                            Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced").SetValue("HideFileExt", 1);
-                        break;
-                }
+                Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced")
+                    .SetValue("HideFileExt", ext.IsOn ? 0 : 1);
             }
         }
 
@@ -334,15 +332,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (pchome.IsOn)
-                {
-                    case true:
-                            Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced").SetValue("LaunchTo", 1);
-                        break;
-                    case false:
-                            Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced").SetValue("LaunchTo", 2);
-                        break;
-                }
+                Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced")
+                    .SetValue("LaunchTo", pchome.IsOn ? 1 : 2);
             }
         }
 
@@ -350,15 +341,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (gallery.IsOn)
-                {
-                    case true:
-                            Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}").SetValue("System.IsPinnedToNameSpaceTree", 0);
-                        break;
-                    case false:
-                            Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}").SetValue("System.IsPinnedToNameSpaceTree", 1);
-                        break;
-                }
+                Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}")
+                    .SetValue("System.IsPinnedToNameSpaceTree", gallery.IsOn ? 0 : 1);
             }
         }
 
@@ -366,15 +350,8 @@ namespace MakuTweakerNew
         {
             if (isLoaded)
             {
-                switch (showpc.IsOn)
-                {
-                    case true:
-                            Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel").SetValue("{20D04FE0-3AEA-1069-A2D8-08002B30309D}", 0);
-                        break;
-                    case false:
-                            Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel").SetValue("{20D04FE0-3AEA-1069-A2D8-08002B30309D}", 1);
-                        break;
-                }
+                Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel")
+                    .SetValue("{20D04FE0-3AEA-1069-A2D8-08002B30309D}", showpc.IsOn ? 0 : 1);
             }
         }
 
@@ -391,6 +368,45 @@ namespace MakuTweakerNew
                             Registry.CurrentUser.DeleteSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\NamingTemplates");
                         break;
                 }
+            }
+        }
+
+        private void quickfreq_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (isLoaded)
+            {
+                Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer")
+                    .SetValue("ShowFrequent", quickfreq.IsOn ? 0 : 1);
+            }
+        }
+
+        private void checkboxes_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (isLoaded)
+            {
+                Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced")
+                    .SetValue("AutoCheckSelect", checkboxes.IsOn ? 1 : 0);
+                mw.RebootNotify(2);
+            }
+        }
+
+        private void recdocs_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (isLoaded)
+            {
+                Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer")
+                    .SetValue("NoRecentDocsHistory", recdocs.IsOn ? 1 : 0);
+                mw.RebootNotify(2);
+            }
+        }
+
+        private void confirmdel_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (isLoaded)
+            {
+                Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer")
+                    .SetValue("ConfirmFileDelete", confirmdel.IsOn ? 1 : 0);
+                mw.RebootNotify(2);
             }
         }
     }

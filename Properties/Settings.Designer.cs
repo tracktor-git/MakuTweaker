@@ -289,6 +289,54 @@ namespace MakuTweakerNew.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int GraphUpdateSpeedMs {
+            get {
+                return ((int)(this["GraphUpdateSpeedMs"]));
+            }
+            set {
+                this["GraphUpdateSpeedMs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Cpu")]
+        public string LastPerformanceTab {
+            get {
+                return ((string)(this["LastPerformanceTab"]));
+            }
+            set {
+                this["LastPerformanceTab"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Processes")]
+        public string LastMainTab {
+            get {
+                return ((string)(this["LastMainTab"]));
+            }
+            set {
+                this["LastMainTab"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowHidden_processMGR {
+            get {
+                return ((bool)(this["ShowHidden_processMGR"]));
+            }
+            set {
+                this["ShowHidden_processMGR"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool disableTelemetry {
             get {
@@ -296,6 +344,18 @@ namespace MakuTweakerNew.Properties {
             }
             set {
                 this["disableTelemetry"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool showhiddentabs {
+            get {
+                return ((bool)(this["showhiddentabs"]));
+            }
+            set {
+                this["showhiddentabs"] = value;
             }
         }
     }
